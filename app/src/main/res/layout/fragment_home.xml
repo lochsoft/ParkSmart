@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="8dp">
 
             <AutoCompleteTextView
                 android:id="@+id/searchAutoComplete"
@@ -42,20 +42,20 @@
                 android:id="@+id/listView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/button2"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="70dp"
                 android:layout_marginTop="16dp"
                 android:text="Locate nearest parking space"
                 app:cornerRadius="20dp" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/add_new_parking_place_button"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="70dp"
                 android:layout_marginTop="16dp"
                 android:text="Add New Location"
                 app:cornerRadius="20dp" />
