@@ -12,6 +12,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
 import com.lochana.parkingassistant.addNewLocation; // Assuming this is your Firebase upload class
+import com.lochana.parkingassistant.ui.home.HomeFragment;
 
 public class ParkingLocationHelper {
 
@@ -32,13 +33,12 @@ public class ParkingLocationHelper {
         Toast.makeText(context, "Tap on the map to add a parking location", Toast.LENGTH_SHORT).show();
 
         newParkingMarker = new Marker(mapView);
-        newParkingMarker.setIcon(context.getResources().getDrawable(org.osmdroid.library.R.drawable.marker_default)); // Or your icon
+        newParkingMarker.setIcon(context.getResources().getDrawable(R.drawable.parking_sign));
         newParkingMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         mapView.getOverlays().add(newParkingMarker);
     }
 
-    public boolean isAddingParking() {
-        return isAddingParking;
+    public boolean isAddingParking() {        return isAddingParking;
     }
 
     public void handleMapTap(GeoPoint p) {

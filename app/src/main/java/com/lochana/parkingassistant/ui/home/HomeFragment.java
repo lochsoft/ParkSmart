@@ -12,42 +12,46 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.lochana.parkingassistant.Location;
 import com.lochana.parkingassistant.LocationHelper;
+import com.lochana.parkingassistant.LocationOverlayManager;
 import com.lochana.parkingassistant.R;
+import com.lochana.parkingassistant.RouteDrawer;
 import com.lochana.parkingassistant.addNewLocation;
+import com.lochana.parkingassistant.ParkingLocationHelper; // Import the helper class
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements MapEventsReceiver { // Implement MapEventsReceiver
 
     private MapView mapView;
     private AutoCompleteTextView searchView;
-    private ListView listView;
     private List<String> locationNames;
     private ArrayAdapter<String> adapter;
     private Button addNewLocationBtn;
     private FirebaseFirestore db;
     private addNewLocation addNewLocation;
-    private Button testBtn;
+    private Button userLocateBtn;
     private List<Location> locations;
     private static final BoundingBox SRI_LANKA_BOUNDS = new BoundingBox(
             6.804, 79.902, 6.797, 79.895 // Sri Lanka bounding box
@@ -55,6 +59,9 @@ public class HomeFragment extends Fragment {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private LocationHelper locationHelper;
     private Marker userMarker;
+    private ParkingLocationHelper parkingLocationHelper; // Parking Location Helper
+    private LocationOverlayManager locationOverlayManager;
+    private TextView distanceBanner;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -62,16 +69,21 @@ public class HomeFragment extends Fragment {
 
         mapView = root.findViewById(R.id.openStreetMap);
         searchView = root.findViewById(R.id.searchAutoComplete);
-        listView = root.findViewById(R.id.listView);
+        distanceBanner = root.findViewById(R.id.distanceBannar);
 
         // Initialize LocationHelper
         locationHelper = new LocationHelper(requireContext());
 
         // Initialize userMarker here in onCreateView
-        userMarker = new Marker(mapView);
-        userMarker.setIcon(getResources().getDrawable(org.osmdroid.library.R.drawable.osm_ic_center_map));
+        /*userMarker = new Marker(mapView);
+        userMarker.setIcon(getResources().getDrawable(org.osmdroid.library.R.drawable.marker_default));
         userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        mapView.getOverlays().add(userMarker);
+        mapView.getOverlays().add(userMarker);*/
+
+        // Initialize ParkingLocationHelper
+        parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation());
+
+        locationOverlayManager = new LocationOverlayManager(requireContext(), mapView); // Initialize the marker manager
 
         setupMap();
         fetchLocations();
@@ -80,20 +92,38 @@ public class HomeFragment extends Fragment {
         addNewLocation = new addNewLocation();
         // add new parking place button
         addNewLocationBtn = root.findViewById(R.id.add_new_parking_place_button);
-        addNewLocationBtn.setOnClickListener(v -> addNewLocation.addNewLocation("New Location Name", 12.3456, 78.9012));
+        addNewLocationBtn.setOnClickListener(v -> addNewParking());
+        //addNewLocationBtn.setOnClickListener(v -> parkingLocationHelper.startAddingParking()); // Use ParkingLocationHelper
 
-        // test for fetch locations
-        //testBtn = root.findViewById(R.id.button4);
-        //testBtn.setOnClickListener(v -> {fetchLocations();});
+        userLocateBtn = root.findViewById(R.id.locate_user);
+        userLocateBtn.setOnClickListener(v -> locateUser());
+
+        // draw a line in map
+        /*GeoPoint userLocation = new GeoPoint(6.9271, 79.8612);  // Example: Colombo
+        GeoPoint destination = new GeoPoint(7.2906, 80.6337);   // Example: Kandy
+
+        RouteDrawer.drawRoute(mapView, userLocation, destination);*/
+
+        // draw a road
+        /*GeoPoint userLocation = new GeoPoint(6.9271, 79.8612);  // Example: Colombo
+        GeoPoint destination = new GeoPoint(7.2906, 80.6337);   // Example: Kandy
+
+        //fetchRoute(userLocation, destination, mapView);
+        RouteDrawer.fetchRoute(userLocation, destination, mapView);*/
 
         return root;
     }
 
+    // add new parking
+    private void addNewParking() {
+        parkingLocationHelper.startAddingParking();
+    }
+
     // fetching locations from firebase database
     private void fetchLocations() {
-        locations = new ArrayList<>(); // Initialize the list
-
+        locations = new ArrayList<>();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("locations")
                 .get()
                 .addOnCompleteListener(task -> {
@@ -103,15 +133,20 @@ public class HomeFragment extends Fragment {
                             Double latitude = document.getDouble("latitude");
                             Double longitude = document.getDouble("longitude");
 
-                            Log.d("FirestoreData", "Document ID: " + document.getId());
-                            Log.d("FirestoreData", "Name: " + name);
-                            Log.d("FirestoreData", "Latitude: " + latitude);
-                            Log.d("FirestoreData", "Longitude: " + longitude);
+                            Log.d("FirestoreData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
 
                             Location location = new Location(name, latitude, longitude);
                             locations.add(location);
                         }
+
                         initializeLocations(locations);
+                        locationOverlayManager.addLocationMarkers(locations);
+
+                        // Ensure user marker is not removed
+                        if (userMarker != null) {
+                            mapView.getOverlays().add(userMarker);
+                        }
+                        mapView.invalidate(); // Refresh the map
                     } else {
                         Log.w("FirestoreData", "Error getting documents.", task.getException());
                     }
@@ -143,6 +178,19 @@ public class HomeFragment extends Fragment {
 
                 // Add marker at the searched location
                 addMarker(point, name);
+
+                // draw the route to searched location
+                GeoPoint userLocation = locationHelper.getUserLocation();
+                if (userLocation != null) {
+                    RouteDrawer.fetchRoute(userLocation, point, mapView);
+                }
+
+                // show the distance to selected location
+                double distance = RouteDrawer.calculateDistance(userLocation, point);
+                String distanceText = "Distance to " + name + ": " + distance + " km";
+                distanceBanner.setText(distanceText);
+                distanceBanner.setVisibility(View.VISIBLE);
+
             });
 
         } catch (Exception e) {
@@ -167,6 +215,9 @@ public class HomeFragment extends Fragment {
 
         mapView.setMinZoomLevel(5.0);
         mapView.setMaxZoomLevel(20.0);
+
+        MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this);
+        mapView.getOverlays().add(mapEventsOverlay); // Add MapEventsOverlay
     }
 
     @Override
@@ -178,7 +229,7 @@ public class HomeFragment extends Fragment {
             } else {
                 Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
                 // Optionally set a default location or show a message
-                mapView.getController().setZoom(20.0);
+                mapView.getController().setZoom(7.5);
                 mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718)); // Default center: Sri Lanka
             }
         }
@@ -187,7 +238,7 @@ public class HomeFragment extends Fragment {
     private void locateUser() {
         GeoPoint userLocation = locationHelper.getUserLocation();
         if (userLocation != null) {
-            mapView.getController().setCenter(userLocation);
+            mapView.getController().animateTo(userLocation);
             mapView.getController().setZoom(20.0); // Zoom in closer to the user
 
             // Update the marker's position
@@ -195,16 +246,28 @@ public class HomeFragment extends Fragment {
         } else {
             // Optionally set a default location or show a message
             mapView.getController().setZoom(20.0);
-            mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718)); // Default center: Sri Lanka
+            mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718));
         }
     }
 
     private void updateUserMarkerPosition(GeoPoint point) {
-        if (userMarker != null) {
-            userMarker.setPosition(point);
-            mapView.invalidate(); // Refresh the map
+        if (userMarker == null) {
+            userMarker = new Marker(mapView);
+            userMarker.setIcon(getResources().getDrawable(R.drawable.user_location_pin));
+            userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            userMarker.setTitle("You're Here!");
+            mapView.getOverlays().add(userMarker);
         }
+
+        userMarker.setPosition(point);
+
+        // Ensure it stays on top
+        mapView.getOverlays().remove(userMarker);
+        mapView.getOverlays().add(userMarker);
+
+        mapView.invalidate(); // Refresh the map
     }
+
 
     /**
      * Sets up the search functionality.
@@ -249,12 +312,13 @@ public class HomeFragment extends Fragment {
      * Adds a marker at the specified location.
      */
     private void addMarker(GeoPoint point, String title) {
-        mapView.getOverlays().clear(); // Clear previous markers
+        //mapView.getOverlays().clear(); // Clear previous markers
 
         Marker marker = new Marker(mapView);
         marker.setPosition(point);
         marker.setTitle(title);
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        marker.setIcon(getResources().getDrawable(R.drawable.location_point));
         mapView.getOverlays().add(marker);
 
         mapView.invalidate();
@@ -274,5 +338,16 @@ public class HomeFragment extends Fragment {
         if (mapView != null) {
             mapView.onPause();
         }
+    }
+
+    @Override
+    public boolean singleTapConfirmedHelper(GeoPoint p) {
+        parkingLocationHelper.handleMapTap(p);
+        return true;
+    }
+
+    @Override
+    public boolean longPressHelper(GeoPoint p) {
+        return false;
     }
 }

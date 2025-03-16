@@ -1,3 +1,5 @@
+// get user location
+
 package com.lochana.parkingassistant;
 
 import android.Manifest;
