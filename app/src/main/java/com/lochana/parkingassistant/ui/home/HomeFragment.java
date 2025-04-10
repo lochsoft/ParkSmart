@@ -1,8 +1,10 @@
 package com.lochana.parkingassistant.ui.home;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -48,7 +50,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private AutoCompleteTextView searchView;
     private List<String> locationNames;
     private ArrayAdapter<String> adapter;
-    private Button addNewLocationBtn;
+    private Button addNewLocationBtn, nav_btn;
     private FirebaseFirestore db;
     private addNewLocation addNewLocation;
     private Button userLocateBtn;
@@ -62,6 +64,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private ParkingLocationHelper parkingLocationHelper; // Parking Location Helper
     private LocationOverlayManager locationOverlayManager;
     private TextView distanceBanner;
+    private GeoPoint selectedDestination; // To store the selected location
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -81,13 +84,17 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         mapView.getOverlays().add(userMarker);*/
 
         // Initialize ParkingLocationHelper
-        parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation());
-
+        parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this);
+        //parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, addNewLocation);
         locationOverlayManager = new LocationOverlayManager(requireContext(), mapView); // Initialize the marker manager
 
         setupMap();
         fetchLocations();
         setupSearch();
+
+        // nav btn
+        nav_btn = root.findViewById(R.id.btn_navigate);
+        nav_btn.setOnClickListener(v -> navigateToSelectedLocation());
 
         addNewLocation = new addNewLocation();
         // add new parking place button
@@ -114,13 +121,43 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         return root;
     }
 
+    // google map navigation
+    private void navigateToSelectedLocation() {
+        if (selectedDestination != null) {
+            GeoPoint userLocation = locationHelper.getUserLocation();
+            if (userLocation != null) {
+                double latitude = selectedDestination.getLatitude();
+                double longitude = selectedDestination.getLongitude();
+
+                // Construct the Google Maps navigation intent
+                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d&dirflg=navigate");                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+
+                // Verify that Google Maps is installed
+                if (mapIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+                    startActivity(mapIntent);
+                } else {
+                    //Toast.makeText(requireContext(), "Google Maps app not found", Toast.LENGTH_SHORT).show();
+                    // Optionally, you could open a browser link to Google Maps
+                    Uri gmmWebUri = Uri.parse("https://www.google.com/maps/dir/?api=1&origin=" + userLocation.getLatitude() + "," + userLocation.getLongitude() + "&destination=" + latitude + "," + longitude + "&travelmode=driving");
+                    Intent webIntent = new Intent(Intent.ACTION_VIEW, gmmWebUri);
+                    startActivity(webIntent);
+                }
+            } else {
+                Toast.makeText(requireContext(), "Could not get current location for navigation", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(requireContext(), "Please select a location to navigate to", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     // add new parking
     private void addNewParking() {
         parkingLocationHelper.startAddingParking();
     }
 
     // fetching locations from firebase database
-    private void fetchLocations() {
+    public void fetchLocations() {
         locations = new ArrayList<>();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -136,7 +173,10 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                             Log.d("FirestoreData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
 
                             Location location = new Location(name, latitude, longitude);
+                            String availability = "Available";
+                            // add location names to list
                             locations.add(location);
+                            //locations.add(availability);
                         }
 
                         initializeLocations(locations);
@@ -172,6 +212,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 Location selectedLocation = this.locations.get(position); // Get the Location object
                 GeoPoint point = new GeoPoint(selectedLocation.getLatitude(), selectedLocation.getLongitude());
                 String name = selectedLocation.getName();
+                selectedDestination = point; // Store the selected destination
 
                 // Move the map to the searched location
                 mapView.getController().setCenter(point);
@@ -191,6 +232,9 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 String distanceText = "Distance to " + name + ": " + distance + " km";
                 distanceBanner.setText(distanceText);
                 distanceBanner.setVisibility(View.VISIBLE);
+
+                // show navigate btn
+                nav_btn.setVisibility(View.VISIBLE);
 
             });
 

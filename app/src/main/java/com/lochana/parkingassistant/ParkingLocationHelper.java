@@ -14,18 +14,20 @@ import org.osmdroid.views.overlay.Marker;
 import com.lochana.parkingassistant.addNewLocation; // Assuming this is your Firebase upload class
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 
-public class ParkingLocationHelper {
+public class ParkingLocationHelper{
 
+    private HomeFragment homeFragment; // Reference to HomeFragment
     private Context context;
     private MapView mapView;
     private boolean isAddingParking = false;
     private Marker newParkingMarker;
     private addNewLocation addNewLocation; // Firebase upload class instance
 
-    public ParkingLocationHelper(Context context, MapView mapView, addNewLocation addNewLocation) {
+    public ParkingLocationHelper(Context context, MapView mapView, addNewLocation addNewLocation, HomeFragment homeFragment) {
         this.context = context;
         this.mapView = mapView;
         this.addNewLocation = addNewLocation;
+        this.homeFragment = homeFragment; // Receive HomeFragment instance
     }
 
     public void startAddingParking() {
@@ -64,6 +66,11 @@ public class ParkingLocationHelper {
                 isAddingParking = false;
                 newParkingMarker.remove(mapView);
                 mapView.invalidate();
+                Toast.makeText(context, "Parking location added", Toast.LENGTH_SHORT).show();
+                if (homeFragment != null) {
+                    homeFragment.fetchLocations(); // Call fetchLocations on HomeFragment
+                }
+
             }
         });
 

@@ -48,7 +48,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="70dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="15dp"
             android:background="@drawable/textviewbg"
             android:padding="10dp"
             android:text="Distance to Parking : 200m"
@@ -57,12 +59,27 @@
             android:textStyle="bold"
             android:visibility="gone" />
 
+        <Button
+            android:id="@+id/btn_navigate"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:layout_gravity="bottom|center"
+            android:layout_marginBottom="20dp"
+            android:foregroundTint="#FFFFFF"
+            android:text="Navigate to Parking"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:visibility="gone"
+            app:cornerRadius="30dp" />
+
     </FrameLayout>
 
     <ScrollView
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -92,17 +109,19 @@
                     android:id="@+id/button2"
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
-                    android:text="Locate nearest parking space"
+                    android:text="Locate nearest parking"
+                    android:textColor="#FFFFFF"
                     android:textSize="16sp"
-                    app:cornerRadius="20dp" />
+                    app:cornerRadius="40dp" />
 
                 <Button
                     android:id="@+id/add_new_parking_place_button"
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
                     android:text="Add New Parking Location"
+                    android:textColor="#FFFFFF"
                     android:textSize="16sp"
-                    app:cornerRadius="20dp" />
+                    app:cornerRadius="40dp" />
             </LinearLayout>
 
         </LinearLayout>

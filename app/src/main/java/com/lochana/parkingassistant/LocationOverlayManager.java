@@ -34,7 +34,7 @@ public class LocationOverlayManager {
 
         for (Location location : locations) {
             GeoPoint point = new GeoPoint(location.getLatitude(), location.getLongitude());
-            addMarker(point, location.getName());
+            addMarker(point, location);
         }
 
         mapView.invalidate(); // Refresh the map to display markers
@@ -51,14 +51,28 @@ public class LocationOverlayManager {
     /**
      * Adds a single marker at the specified location.
      */
-    private void addMarker(GeoPoint point, String title) {
+    private void addMarker(GeoPoint point, Location location) {
         Marker marker = new Marker(mapView);
         marker.setPosition(point);
-        marker.setTitle(title);
+        marker.setTitle(location.getName());
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
         Drawable icon = ContextCompat.getDrawable(context, R.drawable.parking_sign);
         marker.setIcon(icon);
+
+        // Create and set the custom InfoWindow
+        CustomParkingInfoWindow infoWindow = new CustomParkingInfoWindow(R.layout.custom_info_window, mapView);
+        // Assuming your Location class has fields for availability and price
+        //infoWindow.setParkingDetails(location.getAvailability(), location.getPrice());
+        infoWindow.setParkingDetails("Available", "Free");
+        marker.setInfoWindow(infoWindow);
+
+        // Set OnMarkerClickListener to handle InfoWindow display
+        marker.setOnMarkerClickListener((clickedMarker, vw) -> {
+            CustomParkingInfoWindow.closeAllInfoWindowsOn(mapView);
+            clickedMarker.showInfoWindow();
+            return true; // Consume the event
+        });
 
         mapView.getOverlays().add(marker);
     }
