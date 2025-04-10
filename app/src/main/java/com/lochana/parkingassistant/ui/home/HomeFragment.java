@@ -165,6 +165,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
             adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, locationNames);
             searchView.setAdapter(adapter);
+            searchView.setThreshold(0);
 
             // Handle item clicks for pinpointing
             searchView.setOnItemClickListener((parent, view, position, id) -> {
@@ -186,7 +187,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 }
 
                 // show the distance to selected location
-                double distance = RouteDrawer.calculateDistance(userLocation, point);
+                Double distance = RouteDrawer.calculateDistance(userLocation, point);
                 String distanceText = "Distance to " + name + ": " + distance + " km";
                 distanceBanner.setText(distanceText);
                 distanceBanner.setVisibility(View.VISIBLE);

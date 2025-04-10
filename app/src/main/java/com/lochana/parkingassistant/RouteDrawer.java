@@ -14,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.text.DecimalFormat;
 
 public class RouteDrawer {
     private static Polyline previousRoute = null;
@@ -135,7 +136,7 @@ public class RouteDrawer {
     /**
      * Calculates the distance between two GeoPoints using the Haversine formula.
      */
-    public static double calculateDistance(GeoPoint point1, GeoPoint point2) {
+    public static Double calculateDistance(GeoPoint point1, GeoPoint point2) {
         double lat1 = Math.toRadians(point1.getLatitude());
         double lon1 = Math.toRadians(point1.getLongitude());
         double lat2 = Math.toRadians(point2.getLatitude());
@@ -152,7 +153,8 @@ public class RouteDrawer {
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = R * c;
-        return Math.round(distance);
+
+        return Math.round(distance * 100.0)/100.0;
     }
 
 }
