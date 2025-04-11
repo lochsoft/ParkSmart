@@ -122,7 +122,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     }
 
     // google map navigation
-    private void navigateToSelectedLocation() {
+    public void navigateToSelectedLocation() {
         if (selectedDestination != null) {
             GeoPoint userLocation = locationHelper.getUserLocation();
             if (userLocation != null) {
