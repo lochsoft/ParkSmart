@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/location_details_banner"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"
+        android:text="Enter Parking Details"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/editTextParkingName"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:hint="Parking Name"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/editTextParkingName2"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:hint="Availability"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/editTextParkingName3"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:hint="Price"
+        android:inputType="text" />
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:hapticFeedbackEnabled="true"
+        android:numStars="5"
+        android:scaleX="0.8"
+        android:scaleY="0.8"
+        android:stepSize="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonCancel"
+            android:layout_width="130dp"
+            android:layout_height="55dp"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="#545454"
+            android:text="Cancel"
+            android:textColor="#FFFFFF"
+            app:cornerRadius="20dp" />
+
+        <Button
+            android:id="@+id/buttonSave"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:backgroundTint="@color/purple_500"
+            android:text="Save"
+            android:textColor="@color/white"
+            app:cornerRadius="20dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

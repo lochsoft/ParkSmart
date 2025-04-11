@@ -46,8 +46,8 @@ public class CustomParkingInfoWindow extends InfoWindow {
         LinearLayout infoWindowLayout = mView.findViewById(R.id.info_window_layout); // Get reference to the layout
 
         title.setText(marker.getTitle());
-        availabilityView.setText("Availability: " + availability);
-        priceView.setText("Price: " + price);
+        availabilityView.setText(availability);
+        priceView.setText(price);
 
         // You can access and set more views from your custom layout here
         // Set OnClickListener to close the InfoWindow when the layout is clicked

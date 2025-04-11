@@ -1,10 +1,9 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#FFFF" /> <!-- 50% transparent black -->
+    <solid android:color="@color/cardview_light_background" /> <!-- 50% transparent black -->
     <corners
         android:topLeftRadius="20dp"
         android:topRightRadius="20dp"
         android:bottomLeftRadius="0dp"
         android:bottomRightRadius="0dp"
     />
-        />
 </shape>
