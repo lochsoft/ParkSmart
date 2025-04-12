@@ -3,128 +3,129 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
     <!-- MapView (Fixed at the top) -->
 
     <!-- Scrollable Content Below -->
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
-
-        <org.osmdroid.views.MapView
-            android:id="@+id/openStreetMap"
-            android:layout_width="match_parent"
-            android:layout_height="550dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="4dp">
-
-        </org.osmdroid.views.MapView>
-
-        <Button
-            android:id="@+id/locate_user"
-            android:layout_width="55dp"
-            android:layout_height="65dp"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="15dp"
-            android:layout_marginBottom="20dp"
-            android:foreground="@drawable/current_location"
-            android:foregroundGravity="center"
-            android:foregroundTint="#FAFAFA"
-            app:cornerRadius="35dp" />
-
-        <TextView
-            android:id="@+id/distanceBannar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="15dp"
-            android:background="@drawable/textviewbg"
-            android:padding="10dp"
-            android:text="Distance to Parking : 200m"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/btn_navigate"
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:layout_gravity="bottom|center"
-            android:layout_marginBottom="20dp"
-            android:foregroundTint="#FFFFFF"
-            android:text="Navigate to Parking"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:visibility="gone"
-            app:cornerRadius="30dp" />
-
-    </FrameLayout>
-
-    <ScrollView
-        android:id="@+id/scrollView2"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:paddingStart="3dp"
-        android:paddingEnd="3dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/frameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/openStreetMap"
+                android:layout_width="match_parent"
+                android:layout_height="550dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp">
+
+            </org.osmdroid.views.MapView>
+
+            <Button
+                android:id="@+id/locate_user"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="15dp"
+                android:layout_marginBottom="20dp"
+                android:foreground="@drawable/current_location"
+                android:foregroundGravity="center"
+                android:foregroundTint="#FAFAFA"
+                app:cornerRadius="35dp" />
+
+            <TextView
+                android:id="@+id/distanceBannar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="15dp"
+                android:background="@drawable/textviewbg"
+                android:padding="10dp"
+                android:text="Distance to Parking : 200m"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btn_navigate"
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:layout_gravity="bottom|center"
+                android:layout_marginBottom="20dp"
+                android:foregroundTint="#FFFFFF"
+                android:text="Navigate to Parking"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:visibility="gone"
+                app:cornerRadius="30dp" />
+
+        </FrameLayout>
+
+        <ScrollView
+            android:id="@+id/scrollView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp">
-
-            <AutoCompleteTextView
-                android:id="@+id/searchAutoComplete"
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginTop="8dp"
-                android:hint="Search Parking (eg: TMLE parking)"
-                android:queryHint="Search location"
-                android:textSize="18dp" />
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp">
 
-                <Button
-                    android:id="@+id/button2"
+                <AutoCompleteTextView
+                    android:id="@+id/searchAutoComplete"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp"
-                    android:text="Locate nearest parking"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    app:cornerRadius="40dp" />
+                    android:layout_height="55dp"
+                    android:layout_marginTop="8dp"
+                    android:hint="Search Parking (eg: TMLE parking)"
+                    android:queryHint="Search location"
+                    android:textSize="18dp" />
 
-                <Button
-                    android:id="@+id/add_new_parking_place_button"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="80dp"
-                    android:text="Add New Parking Location"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    app:cornerRadius="40dp" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/button2"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:text="Locate nearest parking"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        app:cornerRadius="40dp" />
+
+                    <Button
+                        android:id="@+id/add_new_parking_place_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:text="Add New Parking Location"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        app:cornerRadius="40dp" />
+                </LinearLayout>
+
             </LinearLayout>
-
-        </LinearLayout>
-    </ScrollView>
+        </ScrollView>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

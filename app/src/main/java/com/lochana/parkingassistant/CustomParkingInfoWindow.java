@@ -29,7 +29,6 @@ public class CustomParkingInfoWindow extends InfoWindow {
         bottomSheetDialog.setContentView(mView);
 
         navigateButton = mView.findViewById(R.id.button4);
-        navigateButton.setOnClickListener(v -> homeFragmentInstance.navigateToSelectedLocation());
     }
 
     public void setParkingDetails(String availability, String price) {

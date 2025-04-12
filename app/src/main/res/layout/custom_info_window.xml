@@ -34,6 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:hapticFeedbackEnabled="true"
+            android:isIndicator="true"
             android:numStars="5"
             android:scaleX="0.8"
             android:scaleY="0.8"

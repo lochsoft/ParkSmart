@@ -34,6 +34,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.lochana.parkingassistant.Location;
 import com.lochana.parkingassistant.LocationHelper;
 import com.lochana.parkingassistant.LocationOverlayManager;
+import com.lochana.parkingassistant.MapHandler;
+import com.lochana.parkingassistant.NavigationHelper;
 import com.lochana.parkingassistant.R;
 import com.lochana.parkingassistant.RouteDrawer;
 import com.lochana.parkingassistant.addNewLocation;
@@ -65,6 +67,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private LocationOverlayManager locationOverlayManager;
     private TextView distanceBanner;
     private GeoPoint selectedDestination; // To store the selected location
+    private HomeFragment HomeFragment;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -86,15 +89,22 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         // Initialize ParkingLocationHelper
         parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this);
         //parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, addNewLocation);
-        locationOverlayManager = new LocationOverlayManager(requireContext(), mapView); // Initialize the marker manager
+        locationOverlayManager = new LocationOverlayManager(requireContext(), mapView, locationHelper); // Initialize the marker manager
 
         setupMap();
         fetchLocations();
         setupSearch();
 
-        // nav btn
+        // nav btn click
         nav_btn = root.findViewById(R.id.btn_navigate);
-        nav_btn.setOnClickListener(v -> navigateToSelectedLocation());
+        //nav_btn.setOnClickListener(v -> navigateToSelectedLocation());
+        nav_btn.setOnClickListener(v -> {
+            GeoPoint userLocation = locationHelper.getUserLocation();
+            GeoPoint destination = new GeoPoint(selectedDestination.getLatitude(), selectedDestination.getLongitude());
+
+            NavigationHelper.navigateToSelectedLocation(requireContext(), userLocation, destination);
+        });
+
 
         addNewLocation = new addNewLocation();
         // add new parking place button
@@ -123,31 +133,35 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     // google map navigation
     public void navigateToSelectedLocation() {
-        if (selectedDestination != null) {
-            GeoPoint userLocation = locationHelper.getUserLocation();
-            if (userLocation != null) {
-                double latitude = selectedDestination.getLatitude();
-                double longitude = selectedDestination.getLongitude();
+        try {
+            if (selectedDestination != null) {
+                GeoPoint userLocation = locationHelper.getUserLocation();
+                if (userLocation != null) {
+                    double latitude = selectedDestination.getLatitude();
+                    double longitude = selectedDestination.getLongitude();
 
-                // Construct the Google Maps navigation intent
-                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d&dirflg=navigate");                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                mapIntent.setPackage("com.google.android.apps.maps");
+                    // Construct the Google Maps navigation intent
+                    Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d&dirflg=navigate");                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    mapIntent.setPackage("com.google.android.apps.maps");
 
-                // Verify that Google Maps is installed
-                if (mapIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
-                    startActivity(mapIntent);
+                    // Verify that Google Maps is installed
+                    if (mapIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+                        startActivity(mapIntent);
+                    } else {
+                        //Toast.makeText(requireContext(), "Google Maps app not found", Toast.LENGTH_SHORT).show();
+                        // Optionally, you could open a browser link to Google Maps
+                        Uri gmmWebUri = Uri.parse("https://www.google.com/maps/dir/?api=1&origin=" + userLocation.getLatitude() + "," + userLocation.getLongitude() + "&destination=" + latitude + "," + longitude + "&travelmode=driving");
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, gmmWebUri);
+                        startActivity(webIntent);
+                    }
                 } else {
-                    //Toast.makeText(requireContext(), "Google Maps app not found", Toast.LENGTH_SHORT).show();
-                    // Optionally, you could open a browser link to Google Maps
-                    Uri gmmWebUri = Uri.parse("https://www.google.com/maps/dir/?api=1&origin=" + userLocation.getLatitude() + "," + userLocation.getLongitude() + "&destination=" + latitude + "," + longitude + "&travelmode=driving");
-                    Intent webIntent = new Intent(Intent.ACTION_VIEW, gmmWebUri);
-                    startActivity(webIntent);
+                    Toast.makeText(requireContext(), "Could not get current location for navigation", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(requireContext(), "Could not get current location for navigation", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Please select a location to navigate to", Toast.LENGTH_SHORT).show();
             }
-        } else {
-            Toast.makeText(requireContext(), "Please select a location to navigate to", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.d("navigation", "navigation error" + e);
         }
     }
 
@@ -208,7 +222,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             searchView.setThreshold(0);
 
             // Handle item clicks for pinpointing
-            searchView.setOnItemClickListener((parent, view, position, id) -> {
+           /* searchView.setOnItemClickListener((parent, view, position, id) -> {
                 Location selectedLocation = this.locations.get(position); // Get the Location object
                 GeoPoint point = new GeoPoint(selectedLocation.getLatitude(), selectedLocation.getLongitude());
                 String name = selectedLocation.getName();
@@ -236,12 +250,54 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 // show navigate btn
                 nav_btn.setVisibility(View.VISIBLE);
 
+            });*/
+            /*
+            searchView.setOnItemClickListener((parent, view, position, id) -> {
+                handleSearchItemClick(position);
+            });*/
+            MapHandler mapHandler = new MapHandler(mapView, locationHelper, distanceBanner, nav_btn);
+
+            searchView.setOnItemClickListener((parent, view, position, id) -> {
+                Location selectedLocation = locations.get(position);
+                mapHandler.handleSearchItemClick(selectedLocation, destination -> {
+                    selectedDestination = destination;
+                });
             });
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+    private void handleSearchItemClick(int position) {
+        Location selectedLocation = this.locations.get(position); // Get the Location object
+        GeoPoint point = new GeoPoint(selectedLocation.getLatitude(), selectedLocation.getLongitude());
+        String name = selectedLocation.getName();
+        selectedDestination = point; // Store the selected destination
+
+        // Move the map to the searched location
+        mapView.getController().setCenter(point);
+        mapView.getController().setZoom(20.0);
+
+        // Add marker at the searched location
+        addMarker(point, name);
+
+        // Draw the route to searched location
+        GeoPoint userLocation = locationHelper.getUserLocation();
+        if (userLocation != null) {
+            RouteDrawer.fetchRoute(userLocation, point, mapView);
+        }
+
+        // Show the distance to selected location
+        Double distance = RouteDrawer.calculateDistance(userLocation, point);
+        String distanceText = "Distance to " + name + ": " + distance + " km";
+        distanceBanner.setText(distanceText);
+        distanceBanner.setVisibility(View.VISIBLE);
+
+        // Show navigate button
+        nav_btn.setVisibility(View.VISIBLE);
+    }
+
     /**
      * Configures the map settings.
      */
@@ -274,7 +330,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             } else {
                 Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
                 // Optionally set a default location or show a message
-                mapView.getController().setZoom(7.5);
+                mapView.getController().setZoom(20);
                 mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718)); // Default center: Sri Lanka
             }
         }
@@ -292,6 +348,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             // Optionally set a default location or show a message
             mapView.getController().setZoom(20.0);
             mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718));
+            Toast.makeText(requireContext(), "Could not get user location", Toast.LENGTH_SHORT).show();
         }
     }
 
