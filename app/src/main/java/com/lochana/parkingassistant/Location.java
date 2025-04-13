@@ -3,11 +3,19 @@ public class Location {
     private String name;
     private double latitude;
     private double longitude;
+    private String availability;
+    private Integer rating;
+    private double price;
+    private String documentid;
 
-    public Location(String name, double latitude, double longitude) {
+    public Location(String name, double latitude, double longitude, String availability, Integer rating, double price, String documentid) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.availability = availability;
+        this.rating = rating;
+        this.price = price;
+        this.documentid = documentid;
     }
 
     public String getName() {
@@ -21,4 +29,23 @@ public class Location {
     public double getLongitude() {
         return longitude;
     }
+
+    public String getAvailability(){
+        return availability;
+    }
+
+    public Integer getRating(){
+        return rating;
+    }
+
+    public String getPrice(){
+        return String.valueOf(price);
+    }
+
+    public String getDocumentid(){
+        return documentid;
+    }
+
+
+
 }

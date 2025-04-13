@@ -1,3 +1,4 @@
+// show the bottom sheet for adding new parking location
 package com.lochana.parkingassistant;
 
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RatingBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,9 +32,10 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
     private Marker newParkingMarker;
     private ParkingLocationHelper parkingLocationHelper; // To access cancelAddingParking and HomeFragment
 
-    private EditText editTextParkingName;
+    private EditText editTextParkingName, editTextAvailability, price;
     private Button buttonSave;
     private Button buttonCancel;
+    private RatingBar ratingBar;
 
     public NewParkingDetailsBottomSheet(Context context, GeoPoint point, addNewLocation addNewLocation, MapView mapView, Marker newParkingMarker, ParkingLocationHelper parkingLocationHelper) {
         this.context = context;
@@ -50,11 +53,18 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
         editTextParkingName = view.findViewById(R.id.editTextParkingName);
         buttonSave = view.findViewById(R.id.buttonSave);
         buttonCancel = view.findViewById(R.id.buttonCancel);
+        editTextAvailability = view.findViewById(R.id.editTextParkingName2);
+        price = view.findViewById(R.id.editTextParkingName3);
+        ratingBar = view.findViewById(R.id.ratingBar);
 
         buttonSave.setOnClickListener(v -> {
             String name = editTextParkingName.getText().toString();
+            String availability = editTextAvailability.getText().toString();
+            Integer price = Integer.parseInt(this.price.getText().toString());
+            Integer rating = (int) ratingBar.getRating();
+
             if (!name.isEmpty()) {
-                addNewLocation.addNewLocation(name, selectedPoint.getLatitude(), selectedPoint.getLongitude());
+                addNewLocation.addNewLocation(name, selectedPoint.getLatitude(), selectedPoint.getLongitude(), availability, price, rating);
                 parkingLocationHelper.setAddingParking(false); // Update the flag in the helper
                 newParkingMarker.remove(mapView);
                 mapView.invalidate();
@@ -77,18 +87,6 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
         });
 
         return view;
-    }
-
-    @Override
-    public void onDismiss(@NonNull DialogInterface dialog) {
-        super.onDismiss(dialog);
-        // Handle the event when the bottom sheet is dismissed (including tapping outside)
-        parkingLocationHelper.setAddingParking(false);
-        if (newParkingMarker != null) {
-            newParkingMarker.remove(mapView);
-            mapView.invalidate();
-            Toast.makeText(context, "Adding parking cancelled", Toast.LENGTH_SHORT).show();
-        }
     }
 
 }

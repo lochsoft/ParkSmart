@@ -2,12 +2,14 @@ package com.lochana.parkingassistant.ui.home;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +30,8 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.infowindow.InfoWindow;
+import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -50,7 +54,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     private MapView mapView;
     private AutoCompleteTextView searchView;
-    private List<String> locationNames;
     private ArrayAdapter<String> adapter;
     private Button addNewLocationBtn, nav_btn;
     private FirebaseFirestore db;
@@ -80,12 +83,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         // Initialize LocationHelper
         locationHelper = new LocationHelper(requireContext());
 
-        // Initialize userMarker here in onCreateView
-        /*userMarker = new Marker(mapView);
-        userMarker.setIcon(getResources().getDrawable(org.osmdroid.library.R.drawable.marker_default));
-        userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        mapView.getOverlays().add(userMarker);*/
-
         // Initialize ParkingLocationHelper
         parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this);
         //parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, addNewLocation);
@@ -93,7 +90,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         setupMap();
         fetchLocations();
-        setupSearch();
 
         // nav btn click
         nav_btn = root.findViewById(R.id.btn_navigate);
@@ -115,54 +111,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         userLocateBtn = root.findViewById(R.id.locate_user);
         userLocateBtn.setOnClickListener(v -> locateUser());
 
-        // draw a line in map
-        /*GeoPoint userLocation = new GeoPoint(6.9271, 79.8612);  // Example: Colombo
-        GeoPoint destination = new GeoPoint(7.2906, 80.6337);   // Example: Kandy
-
-        RouteDrawer.drawRoute(mapView, userLocation, destination);*/
-
-        // draw a road
-        /*GeoPoint userLocation = new GeoPoint(6.9271, 79.8612);  // Example: Colombo
-        GeoPoint destination = new GeoPoint(7.2906, 80.6337);   // Example: Kandy
-
-        //fetchRoute(userLocation, destination, mapView);
-        RouteDrawer.fetchRoute(userLocation, destination, mapView);*/
-
         return root;
-    }
-
-    // google map navigation
-    public void navigateToSelectedLocation() {
-        try {
-            if (selectedDestination != null) {
-                GeoPoint userLocation = locationHelper.getUserLocation();
-                if (userLocation != null) {
-                    double latitude = selectedDestination.getLatitude();
-                    double longitude = selectedDestination.getLongitude();
-
-                    // Construct the Google Maps navigation intent
-                    Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d&dirflg=navigate");                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                    mapIntent.setPackage("com.google.android.apps.maps");
-
-                    // Verify that Google Maps is installed
-                    if (mapIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
-                        startActivity(mapIntent);
-                    } else {
-                        //Toast.makeText(requireContext(), "Google Maps app not found", Toast.LENGTH_SHORT).show();
-                        // Optionally, you could open a browser link to Google Maps
-                        Uri gmmWebUri = Uri.parse("https://www.google.com/maps/dir/?api=1&origin=" + userLocation.getLatitude() + "," + userLocation.getLongitude() + "&destination=" + latitude + "," + longitude + "&travelmode=driving");
-                        Intent webIntent = new Intent(Intent.ACTION_VIEW, gmmWebUri);
-                        startActivity(webIntent);
-                    }
-                } else {
-                    Toast.makeText(requireContext(), "Could not get current location for navigation", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                Toast.makeText(requireContext(), "Please select a location to navigate to", Toast.LENGTH_SHORT).show();
-            }
-        } catch (Exception e) {
-            Log.d("navigation", "navigation error" + e);
-        }
     }
 
     // add new parking
@@ -183,14 +132,15 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                             String name = document.getString("name");
                             Double latitude = document.getDouble("latitude");
                             Double longitude = document.getDouble("longitude");
+                            String availability = document.getString("availability");
+                            Integer rating = document.getLong("rating").intValue();
+                            Double price = document.getDouble("price");
 
                             Log.d("FirestoreData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
 
-                            Location location = new Location(name, latitude, longitude);
-                            String availability = "Available";
+                            Location location = new Location(name, latitude, longitude, availability, rating, price, document.getId());
                             // add location names to list
                             locations.add(location);
-                            //locations.add(availability);
                         }
 
                         initializeLocations(locations);
@@ -217,44 +167,12 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 locationNames.add(location.getName()); // Extract names for the adapter
             }
 
+            Log.d("Location names", "Location Names: " + locationNames.toString());
+
             adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, locationNames);
             searchView.setAdapter(adapter);
-            searchView.setThreshold(0);
+            searchView.setThreshold(1);
 
-            // Handle item clicks for pinpointing
-           /* searchView.setOnItemClickListener((parent, view, position, id) -> {
-                Location selectedLocation = this.locations.get(position); // Get the Location object
-                GeoPoint point = new GeoPoint(selectedLocation.getLatitude(), selectedLocation.getLongitude());
-                String name = selectedLocation.getName();
-                selectedDestination = point; // Store the selected destination
-
-                // Move the map to the searched location
-                mapView.getController().setCenter(point);
-                mapView.getController().setZoom(20.0);
-
-                // Add marker at the searched location
-                addMarker(point, name);
-
-                // draw the route to searched location
-                GeoPoint userLocation = locationHelper.getUserLocation();
-                if (userLocation != null) {
-                    RouteDrawer.fetchRoute(userLocation, point, mapView);
-                }
-
-                // show the distance to selected location
-                Double distance = RouteDrawer.calculateDistance(userLocation, point);
-                String distanceText = "Distance to " + name + ": " + distance + " km";
-                distanceBanner.setText(distanceText);
-                distanceBanner.setVisibility(View.VISIBLE);
-
-                // show navigate btn
-                nav_btn.setVisibility(View.VISIBLE);
-
-            });*/
-            /*
-            searchView.setOnItemClickListener((parent, view, position, id) -> {
-                handleSearchItemClick(position);
-            });*/
             MapHandler mapHandler = new MapHandler(mapView, locationHelper, distanceBanner, nav_btn);
 
             searchView.setOnItemClickListener((parent, view, position, id) -> {
@@ -264,10 +182,12 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 });
             });
 
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
 
     private void handleSearchItemClick(int position) {
         Location selectedLocation = this.locations.get(position); // Get the Location object

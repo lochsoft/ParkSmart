@@ -12,12 +12,15 @@ public class addNewLocation { // Or put this method in your Activity
         db = FirebaseFirestore.getInstance();
     }
 
-    public void addNewLocation(String name, double latitude, double longitude) {
+    public void addNewLocation(String name, double latitude, double longitude, String availability, Integer price, Integer rating) {
         // Create a new document with a generated ID
         Map<String, Object> location = new HashMap<>();
         location.put("name", name);
         location.put("latitude", latitude);
         location.put("longitude", longitude);
+        location.put("availability",availability );
+        location.put("price", price);
+        location.put("rating", rating);
 
         // Add a new document with a generated ID
         db.collection("locations")
