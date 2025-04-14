@@ -86,7 +86,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         // Initialize ParkingLocationHelper
         parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this);
         //parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, addNewLocation);
-        locationOverlayManager = new LocationOverlayManager(requireContext(), mapView, locationHelper); // Initialize the marker manager
+        locationOverlayManager = new LocationOverlayManager(requireContext(), mapView, locationHelper, selectedDestination, new addNewLocation(), this, new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this)); // Initialize the marker manager
 
         setupMap();
         fetchLocations();
@@ -121,40 +121,49 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     // fetching locations from firebase database
     public void fetchLocations() {
-        locations = new ArrayList<>();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        try {
+            locations = new ArrayList<>();
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("locations")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            String name = document.getString("name");
-                            Double latitude = document.getDouble("latitude");
-                            Double longitude = document.getDouble("longitude");
-                            String availability = document.getString("availability");
-                            Integer rating = document.getLong("rating").intValue();
-                            Double price = document.getDouble("price");
+            db.collection("locations")
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                String name = document.getString("name");
+                                Double latitude = document.getDouble("latitude");
+                                Double longitude = document.getDouble("longitude");
+                                String availability = document.getString("availability");
+                                Integer rating = document.getLong("rating").intValue();
+                                Double price = document.getDouble("price");
+                                String description = document.getString("description");
 
-                            Log.d("FirestoreData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
+                                if (description == null) {
+                                    description = "No description available";
+                                }
 
-                            Location location = new Location(name, latitude, longitude, availability, rating, price, document.getId());
-                            // add location names to list
-                            locations.add(location);
+                                Log.d("FirestoreData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
+
+                                Location location = new Location(name, latitude, longitude, availability, rating, price, document.getId(), description);
+                                // add location names to list
+                                locations.add(location);
+                            }
+
+                            initializeLocations(locations);
+                            locationOverlayManager.addLocationMarkers(locations);
+
+                            // Ensure user marker is not removed
+                            if (userMarker != null) {
+                                mapView.getOverlays().add(userMarker);
+                            }
+                            mapView.invalidate(); // Refresh the map
+                        } else {
+                            Log.w("FirestoreData", "Error getting documents.", task.getException());
                         }
-
-                        initializeLocations(locations);
-                        locationOverlayManager.addLocationMarkers(locations);
-
-                        // Ensure user marker is not removed
-                        if (userMarker != null) {
-                            mapView.getOverlays().add(userMarker);
-                        }
-                        mapView.invalidate(); // Refresh the map
-                    } else {
-                        Log.w("FirestoreData", "Error getting documents.", task.getException());
-                    }
-                });
+                    });
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error fetching locations: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     // Initialize the adapter and set it to the AutoCompleteTextView
@@ -181,8 +190,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                     selectedDestination = destination;
                 });
             });
-
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

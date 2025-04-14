@@ -3,9 +3,8 @@
 package com.lochana.parkingassistant;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -22,8 +21,6 @@ import org.osmdroid.views.overlay.Overlay;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.lochana.parkingassistant.Location;
-import com.lochana.parkingassistant.R;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 
 import java.util.List;
@@ -32,11 +29,21 @@ public class LocationOverlayManager {
     private final MapView mapView;
     private final Context context;
     private final LocationHelper locationHelper;
+    private final GeoPoint selectedDestination;
+    private final addNewLocation addNewLocation;
+    private HomeFragment homeFragment;
+    private Marker newParkingMarker;
+    private ParkingLocationHelper parkingLocationHelper;
+    private ExistingParkingData selectedPoint;
 
-    public LocationOverlayManager(Context context, MapView mapView, LocationHelper locationHelper) {
+    public LocationOverlayManager(Context context, MapView mapView, LocationHelper locationHelper, GeoPoint selectedDestination, com.lochana.parkingassistant.addNewLocation addNewLocation, HomeFragment homeFragment, ParkingLocationHelper parkingLocationHelper) {
         this.context = context;
         this.mapView = mapView;
         this.locationHelper = locationHelper;
+        this.selectedDestination = selectedDestination;
+        this.addNewLocation = addNewLocation;
+        this.homeFragment = homeFragment;
+        this.parkingLocationHelper = parkingLocationHelper;
     }
 
     /**
@@ -94,12 +101,17 @@ public class LocationOverlayManager {
         Button deleteButton = bottomSheetView.findViewById(R.id.button);
         RatingBar ratingBar = bottomSheetView.findViewById(R.id.ratingBar2);
         Button editButton = bottomSheetView.findViewById(R.id.button3);
+        TextView description = bottomSheetView.findViewById(R.id.textView3);
+
+        // setting data to existing data class
+        selectedPoint = new ExistingParkingData(location.getName(), location.getLatitude(), location.getLongitude(), location.getAvailability(), location.getPrice(), location.getRating(), location.getDescription(), location.getDocumentid());
 
         /// setting informations of locations ///
         title.setText(location.getName());
         availabilityView.setText(location.getAvailability());
         priceView.setText(location.getPrice());
         ratingBar.setRating(location.getRating());
+        description.setText(location.getDescription());
 
         navigateButton.setOnClickListener(v -> {
             GeoPoint userLocation = locationHelper.getUserLocation();
@@ -111,7 +123,10 @@ public class LocationOverlayManager {
             deleteLocationFromFirestore(location.getDocumentid(), marker);
             bottomSheetDialog.dismiss(); // close the bottom sheet after deletion
         });
-
+        editButton.setOnClickListener(v -> {
+            editLocations(selectedDestination);
+            bottomSheetDialog.dismiss(); // close the bottom sheet after deletion
+        });
 
         bottomSheetDialog.show();
     }
@@ -140,7 +155,14 @@ public class LocationOverlayManager {
     }
 
     private void editLocations(GeoPoint point){
+        try {
+            NewParkingDetailsBottomSheet bottomSheet = new NewParkingDetailsBottomSheet(
+                    context, point, addNewLocation, mapView, newParkingMarker, parkingLocationHelper, selectedPoint);
+            bottomSheet.show(((HomeFragment) homeFragment).getChildFragmentManager(), "ParkingDetailsBottomSheet");
+            Log.d("edit Locations", "passed");
 
+        } catch (Exception e) {
+            Log.d("edit Locations", "error "+e.getMessage());
+        }
     }
-
 }

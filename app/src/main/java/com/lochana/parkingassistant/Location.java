@@ -1,5 +1,6 @@
 package com.lochana.parkingassistant;
 public class Location {
+    private final String description;
     private String name;
     private double latitude;
     private double longitude;
@@ -8,7 +9,7 @@ public class Location {
     private double price;
     private String documentid;
 
-    public Location(String name, double latitude, double longitude, String availability, Integer rating, double price, String documentid) {
+    public Location(String name, double latitude, double longitude, String availability, Integer rating, double price, String documentid, String description) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -16,6 +17,7 @@ public class Location {
         this.rating = rating;
         this.price = price;
         this.documentid = documentid;
+        this.description = description;
     }
 
     public String getName() {
@@ -47,5 +49,7 @@ public class Location {
     }
 
 
-
+    public String getDescription() {
+        return description;
+    }
 }

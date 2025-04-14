@@ -62,7 +62,7 @@ public class ParkingLocationHelper{
 
     private void showParkingDetailsDialog(GeoPoint point) {
         NewParkingDetailsBottomSheet bottomSheet = new NewParkingDetailsBottomSheet(
-                context, point, addNewLocation, mapView, newParkingMarker, this);
+                context, point, addNewLocation, mapView, newParkingMarker, this, null);
         bottomSheet.show(((HomeFragment) homeFragment).getChildFragmentManager(), "ParkingDetailsBottomSheet");
     }
 
