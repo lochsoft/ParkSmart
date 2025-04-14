@@ -18,6 +18,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -90,6 +91,9 @@ public class LocationOverlayManager {
     }
 
     private void showParkingBottomSheet(Location location, Marker marker) {
+        GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+        mapView.getController().animateTo(geoPoint);
+        marker.showInfoWindow();
         View bottomSheetView = LayoutInflater.from(context).inflate(R.layout.custom_info_window, null);
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context, R.style.CustomBottomSheetDialogTheme);
         bottomSheetDialog.setContentView(bottomSheetView);

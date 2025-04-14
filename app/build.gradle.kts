@@ -51,5 +51,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(libs.osmdroid)
     implementation(libs.firebase.messaging)
-
+    implementation(libs.play.services.location)
 }

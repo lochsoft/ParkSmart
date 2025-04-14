@@ -2,6 +2,12 @@
 
 package com.lochana.parkingassistant;
 
+import android.annotation.SuppressLint;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -19,9 +25,23 @@ import org.osmdroid.util.GeoPoint;
 public class LocationHelper {
 
     private Context context; // Store the context
+    private FusedLocationProviderClient fusedLocationClient;
 
     public LocationHelper(Context context) {
         this.context = context;
+    }
+
+    public void initFusedLocation() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+    }
+
+    @SuppressLint("MissingPermission")
+    public void getAccurateLocation(OnSuccessListener<Location> onSuccessListener) {
+        if (!checkLocationPermission()) return;
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(onSuccessListener)
+                .addOnFailureListener(e -> Toast.makeText(context, "Location error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     public boolean checkLocationPermission() {

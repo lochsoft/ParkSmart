@@ -101,7 +101,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             NavigationHelper.navigateToSelectedLocation(requireContext(), userLocation, destination);
         });
 
-
         addNewLocation = new addNewLocation();
         // add new parking place button
         addNewLocationBtn = root.findViewById(R.id.add_new_parking_place_button);
@@ -195,36 +194,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         }
     }
 
-
-    private void handleSearchItemClick(int position) {
-        Location selectedLocation = this.locations.get(position); // Get the Location object
-        GeoPoint point = new GeoPoint(selectedLocation.getLatitude(), selectedLocation.getLongitude());
-        String name = selectedLocation.getName();
-        selectedDestination = point; // Store the selected destination
-
-        // Move the map to the searched location
-        mapView.getController().setCenter(point);
-        mapView.getController().setZoom(20.0);
-
-        // Add marker at the searched location
-        addMarker(point, name);
-
-        // Draw the route to searched location
-        GeoPoint userLocation = locationHelper.getUserLocation();
-        if (userLocation != null) {
-            RouteDrawer.fetchRoute(userLocation, point, mapView);
-        }
-
-        // Show the distance to selected location
-        Double distance = RouteDrawer.calculateDistance(userLocation, point);
-        String distanceText = "Distance to " + name + ": " + distance + " km";
-        distanceBanner.setText(distanceText);
-        distanceBanner.setVisibility(View.VISIBLE);
-
-        // Show navigate button
-        nav_btn.setVisibility(View.VISIBLE);
-    }
-
     /**
      * Configures the map settings.
      */
@@ -264,6 +233,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     }
 
     private void locateUser() {
+        /*
         GeoPoint userLocation = locationHelper.getUserLocation();
         if (userLocation != null) {
             mapView.getController().animateTo(userLocation);
@@ -276,7 +246,24 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             mapView.getController().setZoom(20.0);
             mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718));
             Toast.makeText(requireContext(), "Could not get user location", Toast.LENGTH_SHORT).show();
-        }
+        }*/
+
+        LocationHelper locationHelper = new LocationHelper(requireContext());
+        locationHelper.initFusedLocation();
+
+        locationHelper.getAccurateLocation(location -> {
+            if (location != null) {
+                GeoPoint userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+                mapView.getController().animateTo(userLocation);
+                mapView.getController().setZoom(30.0);
+                updateUserMarkerPosition(userLocation); // update the marker position
+                Log.d("UserLocation", "Lat: " + userLocation.getLatitude() + ", Lon: " + userLocation.getLongitude());
+                // You can now place your pin here
+            } else {
+                Toast.makeText(getContext(), "Unable to get current location", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     private void updateUserMarkerPosition(GeoPoint point) {
