@@ -1,0 +1,60 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/top_layout"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/parkingName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:elevation="8dp"
+            android:text="Parking Location"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/parking_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:layout_weight="1"
+            android:elevation="8dp"
+            android:gravity="center"
+            android:padding="0dp"
+            android:text="Price"
+            android:textSize="16sp" />
+
+        <RatingBar
+            android:id="@+id/parkingRating"
+            style="@style/Widget.AppCompat.RatingBar.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:elevation="8dp"
+            android:isIndicator="true"
+            android:numStars="5"
+            android:progressTint="@color/purple_500"
+            android:stepSize="1" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/navigateBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:elevation="8dp"
+        android:text="Navigate"
+        app:cornerRadius="20dp"
+        app:icon="@drawable/right_arrow_6150"
+        app:iconSize="20dp" />
+</LinearLayout>

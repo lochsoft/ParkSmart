@@ -1,10 +1,15 @@
 package com.lochana.parkingassistant;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -19,9 +24,12 @@ public class NavigationHelper {
      * @param destination      The destination to navigate to.
      */
     public static void navigateToSelectedLocation(Context context, GeoPoint userLocation, GeoPoint destination) {
+        new MaterialAlertDialogBuilder(context)
+                .setTitle("Navigate")
+                .setMessage("Do you want to navigate to the selected location?")
+                .setPositiveButton("Yes", (dialog, which) -> {
         try {
             if (destination != null) {
-                if (userLocation != null) {
                     double latitude = destination.getLatitude();
                     double longitude = destination.getLongitude();
 
@@ -36,15 +44,11 @@ public class NavigationHelper {
                     } else {
                         // If not installed, open in browser
                         Uri gmmWebUri = Uri.parse("https://www.google.com/maps/dir/?api=1&origin=" +
-                                userLocation.getLatitude() + "," + userLocation.getLongitude() +
                                 "&destination=" + latitude + "," + longitude +
                                 "&travelmode=driving");
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, gmmWebUri);
                         context.startActivity(webIntent);
                     }
-                } else {
-                    Toast.makeText(context, "Could not get current location for navigation", Toast.LENGTH_SHORT).show();
-                }
             } else {
                 Toast.makeText(context, "Please select a location to navigate to", Toast.LENGTH_SHORT).show();
             }
@@ -52,4 +56,7 @@ public class NavigationHelper {
             Log.d("NavigationHelper", "Navigation error: " + e.getMessage());
         }
     }
+    ).setNegativeButton("No", null)
+    .show();
+}
 }

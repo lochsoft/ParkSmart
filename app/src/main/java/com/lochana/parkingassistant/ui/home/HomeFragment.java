@@ -27,14 +27,18 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.lochana.parkingassistant.ExistingParkingBottomSheet;
+import com.lochana.parkingassistant.ExistingParkingData;
 import com.lochana.parkingassistant.Location;
 import com.lochana.parkingassistant.LocationHelper;
 import com.lochana.parkingassistant.LocationOverlayManager;
 import com.lochana.parkingassistant.MapHandler;
 import com.lochana.parkingassistant.NavigationHelper;
 import com.lochana.parkingassistant.NearestParkingFinder;
+import com.lochana.parkingassistant.NewParkingDetailsBottomSheet;
 import com.lochana.parkingassistant.R;
 import com.lochana.parkingassistant.RouteDrawer;
 import com.lochana.parkingassistant.addNewLocation;
@@ -51,14 +55,14 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private Button addNewLocationBtn, nav_btn;
     private FirebaseFirestore db;
     private addNewLocation addNewLocation;
-    private Button userLocateBtn, nearestParkingBtn;
+    private Button userLocateBtn, nearestParkingBtn, allParksBtn, saveCurrentSpot;
     private List<Location> locations;
     private static final BoundingBox SRI_LANKA_BOUNDS = new BoundingBox(
             6.804, 79.902, 6.797, 79.895 // Sri Lanka bounding box
     );
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private LocationHelper locationHelper;
-    private Marker userMarker;
+    private Marker userMarker, newParkingMarker ;
     private ParkingLocationHelper parkingLocationHelper; // Parking Location Helper
     private LocationOverlayManager locationOverlayManager;
     private TextView distanceBanner;
@@ -75,13 +79,14 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         distanceBanner = root.findViewById(R.id.distanceBannar);
         nearestParkingBtn = root.findViewById(R.id.locate_user4);
         progressBar = root.findViewById(R.id.progressBar);
+        allParksBtn = root.findViewById(R.id.all_parks_btn);
+        saveCurrentSpot = root.findViewById(R.id.saveCurrentSpot);
 
         // Initialize LocationHelper
         locationHelper = new LocationHelper(requireContext());
 
         // Initialize ParkingLocationHelper
         parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this);
-        //parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, addNewLocation);
         locationOverlayManager = new LocationOverlayManager(requireContext(), mapView, locationHelper, selectedDestination, new addNewLocation(), this, new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this)); // Initialize the marker manager
 
         setupMap();
@@ -111,9 +116,30 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         // initialize search view
 
+        // save current spot
+        saveCurrentSpot.setOnClickListener(v -> saveMyCurrentSpot(userMarker.getPosition()));
 
         return root;
     }
+
+    // save current parking spot
+    private void saveMyCurrentSpot(GeoPoint point){
+        newParkingMarker = new Marker(mapView);
+        try {
+            NewParkingDetailsBottomSheet bottomSheet = new NewParkingDetailsBottomSheet(
+                    requireContext(), point, addNewLocation, mapView, newParkingMarker, parkingLocationHelper, null);
+            bottomSheet.show(requireFragmentManager(), "ParkingDetailsBottomSheet");
+            Log.d("Save current spot", "passed");
+        } catch (Exception e) {
+            Log.d("Save current spot", "error "+e.getMessage());
+        }
+    }
+
+    // show all parks
+    private void showAllParks(){
+        ExistingParkingBottomSheet bottomSheet = new ExistingParkingBottomSheet(locations);
+        bottomSheet.show(requireFragmentManager(), bottomSheet.getTag());
+        }
 
     // locate nearest parking
     private void locateNearestParking() {
@@ -126,7 +152,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         progressBar.setVisibility(View.GONE);
 
         // Show confirmation dialog
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Navigate to Nearest Parking Spot?")
                 .setMessage("Nearest location is: " + nearest.getName() + "\nDo you want to show the route?")
                 .setPositiveButton("Yes", (dialog, which) -> {
@@ -174,6 +200,9 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
                             initializeLocations(locations);
                             locationOverlayManager.addLocationMarkers(locations);
+
+                            // updating all parkings
+                            allParksBtn.setOnClickListener(v -> showAllParks());
 
                             // Ensure user marker is not removed
                             if (userMarker != null) {

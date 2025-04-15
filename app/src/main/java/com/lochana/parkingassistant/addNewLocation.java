@@ -7,7 +7,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class addNewLocation { // Or put this method in your Activity
+public class addNewLocation {
 
     private FirebaseFirestore db;
 
@@ -54,7 +54,4 @@ public class addNewLocation { // Or put this method in your Activity
         }
     }
 
-    // Example Usage (from an Activity or Fragment):
-    // FirebaseHelper firebaseHelper = new FirebaseHelper();
-    // firebaseHelper.addNewLocation("New Location Name", 12.3456, 78.9012);
 }

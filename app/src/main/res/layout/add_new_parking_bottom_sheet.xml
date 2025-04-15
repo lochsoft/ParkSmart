@@ -84,8 +84,9 @@
             android:layout_gravity="center"
             android:hapticFeedbackEnabled="true"
             android:numStars="5"
-            android:scaleX="0.8"
-            android:scaleY="0.8"
+            android:progressTint="@color/purple_500"
+            android:scaleX="0.7"
+            android:scaleY="0.7"
             android:stepSize="1" />
     </LinearLayout>
 

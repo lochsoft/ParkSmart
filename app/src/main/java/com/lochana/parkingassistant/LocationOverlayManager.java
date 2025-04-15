@@ -141,9 +141,9 @@ public class LocationOverlayManager {
 
         // Add sample image URLs
         List<String> imageUrls = Arrays.asList(
-                "https://cdn.pixabay.com/photo/2025/03/18/17/03/dog-9478487_1280.jpg",
-                "https://cdn.pixabay.com/photo/2024/03/11/12/05/easter-8626470_1280.jpg",
-                "https://cdn.pixabay.com/photo/2023/09/13/15/41/mountain-8251186_1280.jpg"
+                "https://cdn.pixabay.com/photo/2025/03/18/17/03/dog-9478487_1280.jp",
+                "https://cdn.pixabay.com/photo/2024/03/11/12/05/easter-8626470_1280.jp",
+                "https://cdn.pixabay.com/photo/2023/09/13/15/41/mountain-8251186_1280.jp"
         );
 
         ImageAdapter imageAdapter = new ImageAdapter(context, imageUrls);

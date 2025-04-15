@@ -87,6 +87,18 @@
             app:cornerRadius="35dp" />
 
         <Button
+            android:id="@+id/all_parks_btn"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="260dp"
+            android:elevation="8dp"
+            android:foreground="@drawable/all_parking"
+            android:foregroundGravity="center"
+            app:cornerRadius="35dp" />
+
+        <Button
             android:id="@+id/locate_user"
             android:layout_width="55dp"
             android:layout_height="65dp"
@@ -152,16 +164,16 @@
             android:paddingEnd="8dp">
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/saveCurrentSpot"
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
                 android:elevation="8dp"
-                android:text="Locate nearest parking"
+                android:text="Save My current Spot"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 app:cornerRadius="40dp"
-                app:icon="@drawable/right_arrow_6150"
-                app:iconSize="28dp" />
+                app:icon="@drawable/baseline_add_24"
+                app:iconSize="32dp" />
 
         </LinearLayout>
     </ScrollView>
