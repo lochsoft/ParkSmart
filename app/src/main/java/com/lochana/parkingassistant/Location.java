@@ -48,7 +48,6 @@ public class Location {
         return documentid;
     }
 
-
     public String getDescription() {
         return description;
     }

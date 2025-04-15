@@ -8,11 +8,19 @@
     android:orientation="vertical"
     android:padding="8dp">
 
+    <View
+        android:id="@+id/view6"
+        android:layout_width="60dp"
+        android:layout_height="5dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/drag_handle" />
+
     <LinearLayout
         android:id="@+id/info_window_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:clickable="true"
         android:orientation="vertical"
         android:padding="10dp">
@@ -104,7 +112,7 @@
         <TextView
             android:id="@+id/textView3"
             android:layout_width="match_parent"
-            android:layout_height="75dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Description"
             android:textColor="@color/material_dynamic_neutral40"
@@ -119,9 +127,24 @@
 
     </LinearLayout>
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/imageRecyclerView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:foregroundGravity="clip_horizontal" />
+
+    <View
+        android:id="@+id/view4"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="#5B5B5B" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="86dp"
+        android:layout_marginTop="5dp"
         android:dividerPadding="20dp"
         android:orientation="horizontal">
 

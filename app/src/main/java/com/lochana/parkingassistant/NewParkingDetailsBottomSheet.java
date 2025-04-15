@@ -1,6 +1,7 @@
 // show the bottom sheet for adding new parking location
 package com.lochana.parkingassistant;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -10,12 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.RatingBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.lochana.parkingassistant.addNewLocation;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
@@ -144,4 +147,37 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
 
         return view;
     }
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
+
+        dialog.setOnShowListener(dialogInterface -> {
+            BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) dialogInterface;
+            FrameLayout bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet != null) {
+                bottomSheet.setBackground(null); // Remove default background
+            }
+        });
+
+        return dialog;
+    }
+
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        try {
+            // Only remove marker if it's a new parking location (i.e., not editing existing one)
+            if (existingPoint == null && newParkingMarker != null && mapView != null) {
+                newParkingMarker.remove(mapView);
+                mapView.invalidate();
+                parkingLocationHelper.setAddingParking(false); // Reset flag
+            }
+        } catch (Exception e) {
+            Log.d("onDismissError", "Error removing marker on dismiss: " + e.getMessage());
+        }
+    }
+
+
 }

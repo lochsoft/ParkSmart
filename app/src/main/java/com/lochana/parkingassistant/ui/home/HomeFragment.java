@@ -1,25 +1,21 @@
 package com.lochana.parkingassistant.ui.home;
 
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.location.Address;
-import android.location.Geocoder;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import org.osmdroid.config.Configuration;
@@ -30,8 +26,6 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.infowindow.InfoWindow;
-import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -40,15 +34,14 @@ import com.lochana.parkingassistant.LocationHelper;
 import com.lochana.parkingassistant.LocationOverlayManager;
 import com.lochana.parkingassistant.MapHandler;
 import com.lochana.parkingassistant.NavigationHelper;
+import com.lochana.parkingassistant.NearestParkingFinder;
 import com.lochana.parkingassistant.R;
 import com.lochana.parkingassistant.RouteDrawer;
 import com.lochana.parkingassistant.addNewLocation;
 import com.lochana.parkingassistant.ParkingLocationHelper; // Import the helper class
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class HomeFragment extends Fragment implements MapEventsReceiver { // Implement MapEventsReceiver
 
@@ -58,7 +51,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private Button addNewLocationBtn, nav_btn;
     private FirebaseFirestore db;
     private addNewLocation addNewLocation;
-    private Button userLocateBtn;
+    private Button userLocateBtn, nearestParkingBtn;
     private List<Location> locations;
     private static final BoundingBox SRI_LANKA_BOUNDS = new BoundingBox(
             6.804, 79.902, 6.797, 79.895 // Sri Lanka bounding box
@@ -71,6 +64,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private TextView distanceBanner;
     private GeoPoint selectedDestination; // To store the selected location
     private HomeFragment HomeFragment;
+    private ProgressBar progressBar;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -79,6 +73,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         mapView = root.findViewById(R.id.openStreetMap);
         searchView = root.findViewById(R.id.searchAutoComplete);
         distanceBanner = root.findViewById(R.id.distanceBannar);
+        nearestParkingBtn = root.findViewById(R.id.locate_user4);
+        progressBar = root.findViewById(R.id.progressBar);
 
         // Initialize LocationHelper
         locationHelper = new LocationHelper(requireContext());
@@ -101,6 +97,9 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             NavigationHelper.navigateToSelectedLocation(requireContext(), userLocation, destination);
         });
 
+        // nearest parking finder button
+        nearestParkingBtn.setOnClickListener(v -> locateNearestParking());
+
         addNewLocation = new addNewLocation();
         // add new parking place button
         addNewLocationBtn = root.findViewById(R.id.add_new_parking_place_button);
@@ -110,7 +109,32 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         userLocateBtn = root.findViewById(R.id.locate_user);
         userLocateBtn.setOnClickListener(v -> locateUser());
 
+        // initialize search view
+
+
         return root;
+    }
+
+    // locate nearest parking
+    private void locateNearestParking() {
+        progressBar.setVisibility(View.VISIBLE);
+        GeoPoint userLocation = locationHelper.getUserLocation();
+        Location nearest = NearestParkingFinder.findNearestParking(userLocation.getLatitude(), userLocation.getLongitude(), locations);
+
+        Log.d("NearestLocation", "Nearest Location: " + nearest.getName() + ", Lat: " + nearest.getLatitude() + ", Lon: " + nearest.getLongitude());
+
+        progressBar.setVisibility(View.GONE);
+
+        // Show confirmation dialog
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Navigate to Nearest Parking Spot?")
+                .setMessage("Nearest location is: " + nearest.getName() + "\nDo you want to show the route?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // User clicked Yes
+                    RouteDrawer.fetchRoute(userLocation, new GeoPoint(nearest.getLatitude(), nearest.getLongitude()), mapView);
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 
     // add new parking
@@ -282,62 +306,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         mapView.getOverlays().add(userMarker);
 
         mapView.invalidate(); // Refresh the map
-    }
-
-
-    /**
-     * Sets up the search functionality.
-     */
-    private void setupSearch() {
-        searchView.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedLocation = (String) parent.getItemAtPosition(position);
-            locatePlace(selectedLocation);
-        });
-    }
-
-    /**
-     * Searches for a location and moves the map to that position.
-     */
-    private void locatePlace(String placeName) {
-        if (getContext() == null) return;
-
-        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
-        try {
-            List<Address> addresses = geocoder.getFromLocationName(placeName, 1);
-            if (addresses == null || addresses.isEmpty()) {
-                Toast.makeText(getContext(), "Location not found", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Address address = addresses.get(0);
-            GeoPoint point = new GeoPoint(address.getLatitude(), address.getLongitude());
-
-            // Move the map to the searched location
-            mapView.getController().setCenter(point);
-            mapView.getController().setZoom(20.0);
-
-            // Add marker at the searched location
-            addMarker(point, placeName);
-
-        } catch (IOException e) {
-            Toast.makeText(getContext(), "Error finding location", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * Adds a marker at the specified location.
-     */
-    private void addMarker(GeoPoint point, String title) {
-        //mapView.getOverlays().clear(); // Clear previous markers
-
-        Marker marker = new Marker(mapView);
-        marker.setPosition(point);
-        marker.setTitle(title);
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        marker.setIcon(getResources().getDrawable(R.drawable.location_point));
-        mapView.getOverlays().add(marker);
-
-        mapView.invalidate();
     }
 
     @Override

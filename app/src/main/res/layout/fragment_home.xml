@@ -7,6 +7,17 @@
     tools:context=".ui.home.HomeFragment">
 
     <!-- MapView container -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="64dp"
+        android:layout_height="62dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <FrameLayout
         android:id="@+id/mapContainer"
         android:layout_width="0dp"
@@ -28,6 +39,7 @@
         </org.osmdroid.views.MapView>
 
         <!-- Locate user button -->
+
         <AutoCompleteTextView
             android:id="@+id/searchAutoComplete"
             android:layout_width="match_parent"
@@ -37,14 +49,15 @@
             android:background="@drawable/searchview_bg"
             android:drawableStart="@drawable/search_2903"
             android:drawablePadding="15dp"
-            android:drawableTint="#F0F0F0"
+            android:drawableTint="@color/black"
+            android:elevation="8dp"
             android:hapticFeedbackEnabled="true"
             android:hint="Search Parking (eg: TMLE Parking)"
             android:paddingStart="25dp"
             android:queryHint="Search location"
-            android:shadowColor="#757575"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#F4F4F4"
+            android:shadowColor="@color/material_dynamic_neutral30"
+            android:textColor="@color/material_dynamic_neutral40"
+            android:textColorHint="@color/material_dynamic_neutral30"
             android:textSize="18dp" />
 
         <Button
@@ -54,6 +67,7 @@
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="100dp"
+            android:elevation="8dp"
             android:foreground="@drawable/baseline_add_location_24"
             android:foregroundGravity="center"
             android:foregroundTint="#FAFAFA"
@@ -66,6 +80,7 @@
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="180dp"
+            android:elevation="8dp"
             android:foreground="@drawable/right_arrow_6150"
             android:foregroundGravity="center"
             android:foregroundTint="#FAFAFA"
@@ -78,6 +93,7 @@
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="20dp"
+            android:elevation="8dp"
             android:foreground="@drawable/current_location"
             android:foregroundGravity="center"
             android:foregroundTint="#FAFAFA"
@@ -93,10 +109,11 @@
             android:layout_marginTop="85dp"
             android:layout_marginEnd="15dp"
             android:background="@drawable/textviewbg"
+            android:elevation="8dp"
             android:padding="10dp"
             android:text="Distance to Parking : 200m"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:visibility="gone" />
 
@@ -138,11 +155,13 @@
                 android:id="@+id/button2"
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
+                android:elevation="8dp"
                 android:text="Locate nearest parking"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 app:cornerRadius="40dp"
-                app:icon="@drawable/nearest_parking" />
+                app:icon="@drawable/right_arrow_6150"
+                app:iconSize="28dp" />
 
         </LinearLayout>
     </ScrollView>

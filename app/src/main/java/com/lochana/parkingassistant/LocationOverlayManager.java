@@ -24,7 +24,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 
+import java.util.Arrays;
 import java.util.List;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class LocationOverlayManager {
     private final MapView mapView;
@@ -91,6 +94,7 @@ public class LocationOverlayManager {
     }
 
     private void showParkingBottomSheet(Location location, Marker marker) {
+        try{
         GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
         mapView.getController().animateTo(geoPoint);
         marker.showInfoWindow();
@@ -132,7 +136,26 @@ public class LocationOverlayManager {
             bottomSheetDialog.dismiss(); // close the bottom sheet after deletion
         });
 
+        RecyclerView imageRecyclerView = bottomSheetView.findViewById(R.id.imageRecyclerView);
+        imageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+
+        // Add sample image URLs
+        List<String> imageUrls = Arrays.asList(
+                "https://cdn.pixabay.com/photo/2025/03/18/17/03/dog-9478487_1280.jpg",
+                "https://cdn.pixabay.com/photo/2024/03/11/12/05/easter-8626470_1280.jpg",
+                "https://cdn.pixabay.com/photo/2023/09/13/15/41/mountain-8251186_1280.jpg"
+        );
+
+        ImageAdapter imageAdapter = new ImageAdapter(context, imageUrls);
+        imageRecyclerView.setAdapter(imageAdapter);
+
+        // Close info window when bottom sheet is dismissed
+        bottomSheetDialog.setOnDismissListener(dialog -> marker.closeInfoWindow());
+
         bottomSheetDialog.show();
+        } catch (Exception e) {
+            Log.d("showParkingBottomSheet", "error " + e.getMessage());
+        }
     }
 
     private void deleteLocationFromFirestore(String documentId, Marker marker) {
@@ -151,6 +174,7 @@ public class LocationOverlayManager {
                             .addOnFailureListener(e -> {
                                 Toast.makeText(context, "Error deleting", Toast.LENGTH_SHORT).show();
                             });
+                    marker.closeInfoWindow();
                 })
                 .setNegativeButton("No", (dialog, which) -> {
                     dialog.dismiss(); // Close the dialog
@@ -169,4 +193,5 @@ public class LocationOverlayManager {
             Log.d("edit Locations", "error "+e.getMessage());
         }
     }
+
 }
