@@ -222,6 +222,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
      * Configures the map settings.
      */
     private void setupMap() {
+        try{
         Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
         Configuration.getInstance().load(requireContext(), PreferenceManager.getDefaultSharedPreferences(requireContext()));
 
@@ -239,6 +240,10 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this);
         mapView.getOverlays().add(mapEventsOverlay); // Add MapEventsOverlay
+            }
+            catch (Exception e) {
+                Toast.makeText(requireContext(), "Error setting up map: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
     }
 
     @Override
