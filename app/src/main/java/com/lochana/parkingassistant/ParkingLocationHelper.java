@@ -2,7 +2,10 @@
 
 package com.lochana.parkingassistant;
 
+import static android.app.ProgressDialog.show;
+
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -11,6 +14,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.lochana.parkingassistant.addNewLocation;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 
@@ -31,13 +35,23 @@ public class ParkingLocationHelper{
     }
 
     public void startAddingParking() {
-        isAddingParking = true;
-        Toast.makeText(context, "Tap on the map to add a parking location", Toast.LENGTH_SHORT).show();
-
-        newParkingMarker = new Marker(mapView);
-        newParkingMarker.setIcon(context.getResources().getDrawable(R.drawable.parking_sign));
-        newParkingMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        mapView.getOverlays().add(newParkingMarker);
+        try {
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle("Add New Parking Location")
+                    .setMessage("Tap on the map to add a new parking location")
+                    .setPositiveButton("OK", (dialog, which) -> {
+                        isAddingParking = true;
+                        newParkingMarker = new Marker(mapView);
+                        newParkingMarker.setIcon(context.getResources().getDrawable(R.drawable.parking_sign));
+                        newParkingMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                        mapView.getOverlays().add(newParkingMarker);
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                    .show();
+            //Toast.makeText(context, "Tap on the map to add a parking location", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.d("startAddingParking", "Error starting adding parking" + e.getMessage());
+        }
     }
 
     public boolean isAddingParking() {

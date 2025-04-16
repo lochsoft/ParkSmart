@@ -144,6 +144,20 @@
             android:foregroundTint="#FAFAFA"
             app:cornerRadius="35dp" />
 
+        <Button
+            android:id="@+id/park_add_cancel_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="15dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/material_dynamic_neutral70"
+            android:elevation="8dp"
+            android:text="Cancel"
+            android:textColor="@color/material_dynamic_neutral20"
+            android:visibility="gone"
+            app:cornerRadius="20dp" />
+
         <TextView
             android:id="@+id/distanceBannar"
             android:layout_width="wrap_content"

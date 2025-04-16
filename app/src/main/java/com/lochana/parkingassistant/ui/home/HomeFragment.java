@@ -76,7 +76,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private HomeFragment HomeFragment;
     private ProgressBar progressBar;
     private boolean isMenuOpen = false;
-
+    private Polygon userAccuracyCircle;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -139,8 +139,17 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         // refresh btn logic
         refreshBtn.setOnClickListener(v -> {
-            fetchLocations();
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Update Locations")
+                    .setMessage("Are you sure you want to refresh the locations?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        fetchLocations();
+                        Toast.makeText(requireContext(), "Locations Updated!", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                    .show();
         });
+
 
         return root;
     }
@@ -367,7 +376,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 if (location != null) {
                     GeoPoint userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
                     mapView.getController().animateTo(userLocation);
-                    mapView.getController().setZoom(30.0);
+                    mapView.getController().setZoom(19.0);
                     updateUserMarkerPosition(userLocation); // update the marker position
                     Log.d("UserLocation", "Lat: " + userLocation.getLatitude() + ", Lon: " + userLocation.getLongitude());
                     // You can now place your pin here
@@ -385,7 +394,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         try {
             if (userMarker == null) {
                 userMarker = new Marker(mapView);
-                userMarker.setIcon(getResources().getDrawable(R.drawable.user_location_pin));
+                userMarker.setIcon(getResources().getDrawable(R.drawable.userlocation));
                 userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
                 userMarker.setTitle("You're Here!");
                 mapView.getOverlays().add(userMarker);
@@ -408,18 +417,21 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     // add a circle surrounding user location
     private void showUserAccuracyCircle(GeoPoint userLocation, MapView mapView) {
         try {
-            Polygon circle = new Polygon(); // Create a polygon to simulate a circle
-            circle.setPoints(Polygon.pointsAsCircle(userLocation, 50)); // 50 meters radius
-            circle.setStrokeColor(Color.parseColor("#3366AA")); // Border color
-            circle.setFillColor(Color.parseColor("#503366AA")); // Fill color with transparency
-            circle.setStrokeWidth(2f);
+            if (userAccuracyCircle == null) {
+                userAccuracyCircle = new Polygon(); // Create a polygon once
+                userAccuracyCircle.setStrokeColor(Color.parseColor("#3366AA")); // Border color
+                userAccuracyCircle.setFillColor(Color.parseColor("#503366AA")); // Fill color with transparency
+                userAccuracyCircle.setStrokeWidth(2f);
+                mapView.getOverlays().add(userAccuracyCircle); // Add only once
+            }
 
-            mapView.getOverlays().add(circle);
+            userAccuracyCircle.setPoints(Polygon.pointsAsCircle(userLocation, 50)); // Just update points
             mapView.invalidate(); // Refresh the map
         } catch (Exception e) {
             Log.d("showUserAccuracyCircle", "Error showing user accuracy circle: " + e.getMessage());
         }
     }
+
 
 
     @Override
