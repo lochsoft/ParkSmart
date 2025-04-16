@@ -1,21 +1,26 @@
 package com.lochana.parkingassistant.ui.home;
 
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import org.osmdroid.config.Configuration;
@@ -26,6 +31,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polygon;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -69,6 +75,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private GeoPoint selectedDestination; // To store the selected location
     private HomeFragment HomeFragment;
     private ProgressBar progressBar;
+    private boolean isMenuOpen = false;
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -81,6 +89,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         progressBar = root.findViewById(R.id.progressBar);
         allParksBtn = root.findViewById(R.id.all_parks_btn);
         saveCurrentSpot = root.findViewById(R.id.saveCurrentSpot);
+        Button mainFab = root.findViewById(R.id.controlBtn);
+        Button refreshBtn = root.findViewById(R.id.refreshBtn);
 
         // Initialize LocationHelper
         locationHelper = new LocationHelper(requireContext());
@@ -119,8 +129,37 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         // save current spot
         saveCurrentSpot.setOnClickListener(v -> saveMyCurrentSpot(userMarker.getPosition()));
 
+        // handle button menu
+        LinearLayout fabMenu = root.findViewById(R.id.btnMenu);
+
+        mainFab.setOnClickListener(v -> {
+            toggleFabMenu(fabMenu, mainFab, isMenuOpen, org.osmdroid.library.R.drawable.sharp_add_black_36, org.osmdroid.library.R.drawable.sharp_remove_black_36);
+            isMenuOpen = !isMenuOpen;
+        });
+
+        // refresh btn logic
+        refreshBtn.setOnClickListener(v -> {
+            fetchLocations();
+        });
+
         return root;
     }
+
+    // handle the button menu
+    private void toggleFabMenu(View fabMenu, Button mainFab, boolean isMenuOpen, int openIconRes, int closeIconRes) {
+        if (!isMenuOpen) {
+            fabMenu.setVisibility(View.VISIBLE);
+            fabMenu.setAlpha(0f);
+            fabMenu.animate().alpha(1f).setDuration(200).start();
+            mainFab.setForeground(ContextCompat.getDrawable(requireContext(), closeIconRes));
+        } else {
+            fabMenu.animate().alpha(0f).setDuration(200).withEndAction(() -> {
+                fabMenu.setVisibility(View.GONE);
+            }).start();
+            mainFab.setForeground(ContextCompat.getDrawable(requireContext(), openIconRes));
+        }
+    }
+
 
     // save current parking spot
     private void saveMyCurrentSpot(GeoPoint point){
@@ -143,24 +182,28 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     // locate nearest parking
     private void locateNearestParking() {
-        progressBar.setVisibility(View.VISIBLE);
-        GeoPoint userLocation = locationHelper.getUserLocation();
-        Location nearest = NearestParkingFinder.findNearestParking(userLocation.getLatitude(), userLocation.getLongitude(), locations);
+        try {
+            progressBar.setVisibility(View.VISIBLE);
+            GeoPoint userLocation = locationHelper.getUserLocation();
+            Location nearest = NearestParkingFinder.findNearestParking(userLocation.getLatitude(), userLocation.getLongitude(), locations);
 
-        Log.d("NearestLocation", "Nearest Location: " + nearest.getName() + ", Lat: " + nearest.getLatitude() + ", Lon: " + nearest.getLongitude());
+            Log.d("NearestLocation", "Nearest Location: " + nearest.getName() + ", Lat: " + nearest.getLatitude() + ", Lon: " + nearest.getLongitude());
 
-        progressBar.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
 
-        // Show confirmation dialog
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Navigate to Nearest Parking Spot?")
-                .setMessage("Nearest location is: " + nearest.getName() + "\nDo you want to show the route?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    // User clicked Yes
-                    RouteDrawer.fetchRoute(userLocation, new GeoPoint(nearest.getLatitude(), nearest.getLongitude()), mapView);
-                })
-                .setNegativeButton("No", null)
-                .show();
+            // Show confirmation dialog
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Navigate to Nearest Parking Spot?")
+                    .setMessage("Nearest location is: " + nearest.getName() + "\nDo you want to show the route?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // User clicked Yes
+                        RouteDrawer.fetchRoute(userLocation, new GeoPoint(nearest.getLatitude(), nearest.getLongitude()), mapView);
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        } catch (Exception e) {
+            Log.d("locateNearestParking", "Error finding nearest location: " + e.getMessage());
+        }
     }
 
     // add new parking
@@ -201,7 +244,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                             initializeLocations(locations);
                             locationOverlayManager.addLocationMarkers(locations);
 
-                            // updating all parkings
+                            // updating all parking view
                             allParksBtn.setOnClickListener(v -> showAllParks());
 
                             // Ensure user marker is not removed
@@ -234,14 +277,24 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             searchView.setAdapter(adapter);
             searchView.setThreshold(1);
 
+            // handling search item clicks
             MapHandler mapHandler = new MapHandler(mapView, locationHelper, distanceBanner, nav_btn);
 
             searchView.setOnItemClickListener((parent, view, position, id) -> {
-                Location selectedLocation = locations.get(position);
-                mapHandler.handleSearchItemClick(selectedLocation, destination -> {
-                    selectedDestination = destination;
-                });
+                String selectedName = (String) parent.getItemAtPosition(position);
+                Log.d("SearchView", "Selected item from dropdown: " + selectedName);
+
+                // Find the Location object that matches the selected name
+                for (Location location : locations) {
+                    if (location.getName().equals(selectedName)) {
+                        mapHandler.handleSearchItemClick(location, destination -> {
+                            selectedDestination = destination;
+                        });
+                        break;
+                    }
+                }
             });
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -291,6 +344,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     }
 
     private void locateUser() {
+        try {
         /*
         GeoPoint userLocation = locationHelper.getUserLocation();
         if (userLocation != null) {
@@ -306,41 +360,67 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             Toast.makeText(requireContext(), "Could not get user location", Toast.LENGTH_SHORT).show();
         }*/
 
-        LocationHelper locationHelper = new LocationHelper(requireContext());
-        locationHelper.initFusedLocation();
+            LocationHelper locationHelper = new LocationHelper(requireContext());
+            locationHelper.initFusedLocation();
 
-        locationHelper.getAccurateLocation(location -> {
-            if (location != null) {
-                GeoPoint userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
-                mapView.getController().animateTo(userLocation);
-                mapView.getController().setZoom(30.0);
-                updateUserMarkerPosition(userLocation); // update the marker position
-                Log.d("UserLocation", "Lat: " + userLocation.getLatitude() + ", Lon: " + userLocation.getLongitude());
-                // You can now place your pin here
-            } else {
-                Toast.makeText(getContext(), "Unable to get current location", Toast.LENGTH_SHORT).show();
-            }
-        });
-
+            locationHelper.getAccurateLocation(location -> {
+                if (location != null) {
+                    GeoPoint userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    mapView.getController().animateTo(userLocation);
+                    mapView.getController().setZoom(30.0);
+                    updateUserMarkerPosition(userLocation); // update the marker position
+                    Log.d("UserLocation", "Lat: " + userLocation.getLatitude() + ", Lon: " + userLocation.getLongitude());
+                    // You can now place your pin here
+                } else {
+                    Toast.makeText(getContext(), "Unable to get current location", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            Log.d("LocateUser", "Error locating user: " + e.getMessage());
+            Toast.makeText(requireContext(), "Error locating user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateUserMarkerPosition(GeoPoint point) {
-        if (userMarker == null) {
-            userMarker = new Marker(mapView);
-            userMarker.setIcon(getResources().getDrawable(R.drawable.user_location_pin));
-            userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            userMarker.setTitle("You're Here!");
+        try {
+            if (userMarker == null) {
+                userMarker = new Marker(mapView);
+                userMarker.setIcon(getResources().getDrawable(R.drawable.user_location_pin));
+                userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                userMarker.setTitle("You're Here!");
+                mapView.getOverlays().add(userMarker);
+            }
+
+            userMarker.setPosition(point);
+            showUserAccuracyCircle(point, mapView);
+
+            // Ensure it stays on top
+            mapView.getOverlays().remove(userMarker);
             mapView.getOverlays().add(userMarker);
+
+            mapView.invalidate(); // Refresh the map
+        }catch (Exception e){
+            Toast.makeText(requireContext(), "Error updating user marker position: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.d("updateUserMarkerPosition", "Error updating user marker position: " + e.getMessage());
         }
-
-        userMarker.setPosition(point);
-
-        // Ensure it stays on top
-        mapView.getOverlays().remove(userMarker);
-        mapView.getOverlays().add(userMarker);
-
-        mapView.invalidate(); // Refresh the map
     }
+
+    // add a circle surrounding user location
+    private void showUserAccuracyCircle(GeoPoint userLocation, MapView mapView) {
+        try {
+            Polygon circle = new Polygon(); // Create a polygon to simulate a circle
+            circle.setPoints(Polygon.pointsAsCircle(userLocation, 50)); // 50 meters radius
+            circle.setStrokeColor(Color.parseColor("#3366AA")); // Border color
+            circle.setFillColor(Color.parseColor("#503366AA")); // Fill color with transparency
+            circle.setStrokeWidth(2f);
+
+            mapView.getOverlays().add(circle);
+            mapView.invalidate(); // Refresh the map
+        } catch (Exception e) {
+            Log.d("showUserAccuracyCircle", "Error showing user accuracy circle: " + e.getMessage());
+        }
+    }
+
 
     @Override
     public void onResume() {

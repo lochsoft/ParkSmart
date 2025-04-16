@@ -159,27 +159,36 @@ public class LocationOverlayManager {
     }
 
     private void deleteLocationFromFirestore(String documentId, Marker marker) {
-        new androidx.appcompat.app.AlertDialog.Builder(context)
-                .setTitle("Confirm Location deletion")
-                .setMessage("Are you sure you want to delete this location?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    FirebaseFirestore db = FirebaseFirestore.getInstance();
-                    db.collection("locations").document(documentId)
-                            .delete()
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(context, "Location Deleted", Toast.LENGTH_SHORT).show();
-                                mapView.getOverlays().remove(marker);
-                                mapView.invalidate();
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(context, "Error deleting", Toast.LENGTH_SHORT).show();
-                            });
-                    marker.closeInfoWindow();
-                })
-                .setNegativeButton("No", (dialog, which) -> {
-                    dialog.dismiss(); // Close the dialog
-                })
-                .show();
+        try {
+            new androidx.appcompat.app.AlertDialog.Builder(context)
+                    .setTitle("Confirm Location deletion")
+                    .setMessage("Are you sure you want to delete this location?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+                        db.collection("locations").document(documentId)
+                                .delete()
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(context, "Location Deleted", Toast.LENGTH_SHORT).show();
+                                    mapView.getOverlays().remove(marker);
+                                    mapView.invalidate();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(context, "Error deleting", Toast.LENGTH_SHORT).show();
+                                });
+                        marker.closeInfoWindow();
+                        HomeFragment homeFragment = parkingLocationHelper.getHomeFragment();
+                        if (homeFragment != null) {
+                            homeFragment.fetchLocations();
+                        }
+
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        dialog.dismiss(); // Close the dialog
+                    })
+                    .show();
+        } catch (Exception e) {
+            Log.d("deleteLocations","error " + e.getMessage());
+        }
     }
 
     private void editLocations(GeoPoint point){

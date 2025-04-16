@@ -1,5 +1,6 @@
 package com.lochana.parkingassistant;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -24,6 +25,7 @@ public class MapHandler {
     public void handleSearchItemClick(Location selectedLocation, Consumer<GeoPoint> destinationCallback) {
         GeoPoint point = new GeoPoint(selectedLocation.getLatitude(), selectedLocation.getLongitude());
         String name = selectedLocation.getName();
+        Log.d("MapHandler", "Selected Location: " + name + ", Lat: " + point.getLatitude() + ", Lon: " + point.getLongitude());
 
         // Move the map to the searched location
         mapView.getController().setCenter(point);
