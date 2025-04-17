@@ -2,12 +2,10 @@ package com.lochana.parkingassistant.ui.home;
 
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -19,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -37,7 +34,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.lochana.parkingassistant.ExistingParkingBottomSheet;
-import com.lochana.parkingassistant.ExistingParkingData;
+import com.lochana.parkingassistant.InfoBanner;
 import com.lochana.parkingassistant.Location;
 import com.lochana.parkingassistant.LocationHelper;
 import com.lochana.parkingassistant.LocationOverlayManager;
@@ -397,6 +394,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 userMarker.setIcon(getResources().getDrawable(R.drawable.userlocation));
                 userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
                 userMarker.setTitle("You're Here!");
+                // set info window
+                userMarker.setInfoWindow(new InfoBanner(R.layout.info_banner, mapView));
                 mapView.getOverlays().add(userMarker);
             }
 

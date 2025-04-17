@@ -97,6 +97,7 @@ public class LocationOverlayManager {
         try{
         GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
         mapView.getController().animateTo(geoPoint);
+
         marker.showInfoWindow();
         View bottomSheetView = LayoutInflater.from(context).inflate(R.layout.custom_info_window, null);
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context, R.style.CustomBottomSheetDialogTheme);
