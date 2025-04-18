@@ -35,6 +35,7 @@ public class ParkingLocationHelper{
     }
 
     public void startAddingParking() {
+        Log.d("stratAddingParking", "starting adding parking");
         try {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Add New Parking Location")
@@ -67,6 +68,7 @@ public class ParkingLocationHelper{
     }
 
     public void handleMapTap(GeoPoint p) {
+        Log.d("handleMapTap", "handleMapTap called");
         if (isAddingParking) {
             newParkingMarker.setPosition(p);
             mapView.invalidate();

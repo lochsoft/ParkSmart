@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/location_details_banner"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="15dp">
 
     <View
         android:id="@+id/view5"
@@ -23,48 +23,64 @@
         android:elevation="5dp"
         app:srcCompat="@drawable/add_new_park" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp"
-        android:text="Enter Parking Details"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
-    <EditText
-        android:id="@+id/editTextParkingName"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="Parking Name"
-        android:inputType="text"
-        android:textColor="@color/material_dynamic_neutral50" />
+        android:layout_height="match_parent"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/top_layout"
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/editTextParkingName2"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="Availability"
-        android:inputType="text" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:text="Enter Parking Details"
+            android:textColor="@color/material_dynamic_neutral30"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-    <EditText
-        android:id="@+id/editTextParkingName3"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="Price"
-        android:inputType="text" />
+        <EditText
+            android:id="@+id/editTextParkingName"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Parking Name"
+            android:inputType="text"
+            android:textColor="@color/material_dynamic_neutral30"
+            android:textColorLink="@color/purple_500" />
 
-    <EditText
-        android:id="@+id/parkingDescription"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:gravity="top"
-        android:hint="Description"
-        android:inputType="textMultiLine" />
+        <EditText
+            android:id="@+id/editTextParkingName2"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Availability"
+            android:inputType="text"
+            android:textColor="@color/material_dynamic_neutral30"
+            android:textColorLink="@color/purple_500" />
+
+        <EditText
+            android:id="@+id/editTextParkingName3"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Price"
+            android:inputType="text"
+            android:textColor="@color/material_dynamic_neutral30"
+            android:textColorLink="@color/purple_500" />
+
+        <EditText
+            android:id="@+id/parkingDescription"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:hint="Description (Landmarks etc.)"
+            android:inputType="textMultiLine"
+            android:textColor="@color/material_dynamic_neutral30"
+            android:textColorLink="@color/purple_500" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/top_layout"
         android:orientation="horizontal">
 
         <TextView
@@ -75,6 +91,7 @@
             android:layout_weight="1"
             android:paddingStart="3dp"
             android:text="Rating"
+            android:textColor="@color/material_dynamic_neutral30"
             android:textSize="18sp" />
 
         <RatingBar
@@ -93,13 +110,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
         android:gravity="center"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/buttonCancel"
             android:layout_width="130dp"
-            android:layout_height="55dp"
+            android:layout_height="@dimen/button_height"
             android:layout_marginEnd="8dp"
             android:backgroundTint="#545454"
             android:text="Cancel"
@@ -109,7 +127,7 @@
         <Button
             android:id="@+id/buttonSave"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="@dimen/button_height"
             android:backgroundTint="@color/purple_500"
             android:text="Save"
             android:textColor="@color/white"

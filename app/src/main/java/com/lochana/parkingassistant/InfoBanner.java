@@ -3,6 +3,7 @@ package com.lochana.parkingassistant;
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.osmdroid.events.MapEventsReceiver;
@@ -16,20 +17,26 @@ public class InfoBanner extends InfoWindow {
 
     public InfoBanner(int layoutResId, MapView mapView) {
         super(layoutResId, mapView);
-        MapEventsOverlay eventsOverlay = new MapEventsOverlay(new MapEventsReceiver() {
+        LinearLayout banner_layout = mView.findViewById(R.id.banner_layout);
+        banner_layout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean singleTapConfirmedHelper(GeoPoint p) {
-                InfoWindow.closeAllInfoWindowsOn(mapView);
-                return true;
-            }
+            public void onClick(View v) {
+                close();
+            }});
+//        MapEventsOverlay eventsOverlay = new MapEventsOverlay(new MapEventsReceiver() {
+//            @Override
+//            public boolean singleTapConfirmedHelper(GeoPoint p) {
+//                InfoWindow.closeAllInfoWindowsOn(mapView);
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean longPressHelper(GeoPoint p) {
+//                return false;
+//            }
+//        });
 
-            @Override
-            public boolean longPressHelper(GeoPoint p) {
-                return false;
-            }
-        });
-
-        mapView.getOverlays().add(eventsOverlay);
+        //mapView.getOverlays().add(eventsOverlay);
 
     }
 
