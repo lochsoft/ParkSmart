@@ -1,42 +1,71 @@
 package com.lochana.parkingassistant;
 
 import android.content.Context;
-import android.graphics.Insets;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Window;
-import android.view.WindowManager;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.content.Context;
-import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.lochana.parkingassistant.databinding.ActivityMainBinding;
+import com.lochana.parkingassistant.ui.dashboard.DashboardFragment;
+import com.lochana.parkingassistant.ui.home.HomeFragment;
+import com.lochana.parkingassistant.ui.notifications.NotificationsFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
 
+    private Fragment homeFragment;
+    private Fragment notificationsFragment;
+    private Fragment dashboardFragment;
+    private Fragment activeFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        BottomNavigationView bottomNavigationView = binding.navView;
+
+        // Initialize fragments
+        homeFragment = new HomeFragment();
+        notificationsFragment = new NotificationsFragment();
+        dashboardFragment = new DashboardFragment();
+        activeFragment = homeFragment;
+
+        // Add fragments once and show the initial one
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(R.id.nav_host_fragment_activity_main, dashboardFragment, "3").hide(dashboardFragment).commit();
+        fragmentManager.beginTransaction().add(R.id.nav_host_fragment_activity_main, notificationsFragment, "2").hide(notificationsFragment).commit();
+        fragmentManager.beginTransaction().add(R.id.nav_host_fragment_activity_main, homeFragment, "1").commit();
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+
+            int id = item.getItemId();
+            if (id == R.id.navigation_home) {
+                switchFragment(homeFragment);
+            }
+            else if (id == R.id.navigation_notifications) {
+                switchFragment(notificationsFragment);
+            }
+            else if (id == R.id.navigation_dashboard) {
+                switchFragment(dashboardFragment);
+
+            }
+
+            return false;
+        });
+
+        // Internet check
         checkInternetAndShowRetry();
 
         // Set status bar color
@@ -45,13 +74,20 @@ public class MainActivity extends AppCompatActivity {
             window.setStatusBarColor(ContextCompat.getColor(this, R.color.purple_500));
         }
 
-        // Optional: Makes icons dark if background is light
+        // Make status bar icons dark
         ViewCompat.getWindowInsetsController(getWindow().getDecorView())
                 .setAppearanceLightStatusBars(true);
+    }
 
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        NavigationUI.setupWithNavController(binding.navView, navController);
+    private void switchFragment(Fragment targetFragment) {
+        if (targetFragment != activeFragment) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .hide(activeFragment)
+                    .show(targetFragment)
+                    .commit();
+            activeFragment = targetFragment;
+        }
     }
 
     public void checkInternetAndShowRetry() {
@@ -74,16 +110,8 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again.")
                 .setCancelable(false)
-                .setPositiveButton("Retry", (dialog, which) -> {
-                    // Retry check again
-                    checkInternetAndShowRetry();
-                })
-                .setNegativeButton("Exit", (dialog, which) -> {
-                    finish(); // close the app
-                })
+                .setPositiveButton("Retry", (dialog, which) -> checkInternetAndShowRetry())
+                .setNegativeButton("Exit", (dialog, which) -> finish())
                 .show();
     }
-
-
-
 }

@@ -431,8 +431,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         }
     }
 
-
-
     @Override
     public void onResume() {
         super.onResume();
