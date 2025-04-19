@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
@@ -38,6 +39,10 @@ public class NotificationsFragment extends Fragment {
 
         swipeRefreshLayout = root.findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this::loadNotifications);
+        swipeRefreshLayout.setOnRefreshListener(()->{
+            loadNotifications();
+            Toast.makeText(requireContext(), "Refreshed Notifications", Toast.LENGTH_SHORT).show();
+        });
 
         Button clearButton = root.findViewById(R.id.clrNoticationsBtn);
         clearButton.setOnClickListener(v -> clearAllNotifications());

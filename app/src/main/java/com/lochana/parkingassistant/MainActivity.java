@@ -3,6 +3,7 @@ package com.lochana.parkingassistant;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,6 +14,9 @@ import android.view.Window;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
@@ -27,6 +31,8 @@ import com.lochana.parkingassistant.ui.notifications.NotificationsFragment;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import android.Manifest;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,6 +56,20 @@ public class MainActivity extends AppCompatActivity {
 
                 requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
             }
+        }
+
+        // Check first launch
+        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        boolean firstLaunch = prefs.getBoolean("firstLaunch", true);
+
+        if (firstLaunch) {
+            // Show notification
+            showWelcomeNotification();
+
+            // Update preference so it doesn't show again
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("firstLaunch", false);
+            editor.apply();
         }
 
 //        FirebaseMessaging.getInstance().getToken()
@@ -124,6 +144,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private void showWelcomeNotification() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "channel_id")
+                .setSmallIcon(R.drawable.ic_notifications)
+                .setContentTitle("Welcome!")
+                .setContentText("Thanks for installing Parking Assistant.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat manager = NotificationManagerCompat.from(this);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            manager.notify(1001, builder.build());
+        }
+    }
+
 
     // notification_item.xml handling
     @Override

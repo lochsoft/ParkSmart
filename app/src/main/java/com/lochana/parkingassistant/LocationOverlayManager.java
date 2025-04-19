@@ -22,6 +22,7 @@ import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.lochana.parkingassistant.ui.dashboard.DashboardFragment;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 
 import java.util.Arrays;
@@ -36,6 +37,7 @@ public class LocationOverlayManager {
     private final GeoPoint selectedDestination;
     private final addNewLocation addNewLocation;
     private HomeFragment homeFragment;
+    private DashboardFragment dashboardFragment;
     private Marker newParkingMarker;
     private ParkingLocationHelper parkingLocationHelper;
     private ExistingParkingData selectedPoint;
@@ -111,6 +113,7 @@ public class LocationOverlayManager {
         RatingBar ratingBar = bottomSheetView.findViewById(R.id.ratingBar2);
         Button editButton = bottomSheetView.findViewById(R.id.button3);
         TextView description = bottomSheetView.findViewById(R.id.textView3);
+        Button saveButton = bottomSheetView.findViewById(R.id.button2);
 
         // setting data to existing data class
         selectedPoint = new ExistingParkingData(location.getName(), location.getLatitude(), location.getLongitude(), location.getAvailability(), location.getPrice(), location.getRating(), location.getDescription(), location.getDocumentid());
@@ -137,6 +140,10 @@ public class LocationOverlayManager {
             bottomSheetDialog.dismiss(); // close the bottom sheet after deletion
         });
 
+        saveButton.setOnClickListener(v -> {
+            saveParkingLocation(location);
+        });
+
         RecyclerView imageRecyclerView = bottomSheetView.findViewById(R.id.imageRecyclerView);
         imageRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
 
@@ -156,6 +163,27 @@ public class LocationOverlayManager {
         bottomSheetDialog.show();
         } catch (Exception e) {
             Log.d("showParkingBottomSheet", "error " + e.getMessage());
+        }
+    }
+
+    private void saveParkingLocation(Location location){
+        try {
+            ParkingData data = new ParkingData(
+                    location.getDocumentid(),
+                    location.getName(),
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    location.getAvailability(),
+                    location.getPrice(),
+                    location.getRating(),
+                    location.getDescription()
+            );
+
+            AppDatabase.getInstance(context).parkingDataDao().insert(data);
+            Toast.makeText(context, "Location Saved", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Log.d("saveParkingLocation", "error " + e.getMessage());
         }
     }
 
