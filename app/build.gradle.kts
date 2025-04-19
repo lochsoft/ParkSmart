@@ -54,4 +54,6 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
 }

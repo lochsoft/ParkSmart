@@ -3,6 +3,7 @@ package com.lochana.parkingassistant;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,6 +63,7 @@ public class AllParkings extends RecyclerView.Adapter<AllParkings.ViewHolder> {
             });
         } catch (Exception e) {
             Toast.makeText(context, "Error binding view holder: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.d("AllParkings", "Error binding view holder:" + e.getMessage());
         }
     }
 

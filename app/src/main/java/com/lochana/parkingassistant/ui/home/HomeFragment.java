@@ -147,7 +147,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                     .show();
         });
 
-
         return root;
     }
 

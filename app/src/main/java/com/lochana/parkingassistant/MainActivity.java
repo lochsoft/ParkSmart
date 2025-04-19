@@ -1,9 +1,14 @@
 package com.lochana.parkingassistant;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 
 import androidx.appcompat.app.AlertDialog;
@@ -14,10 +19,14 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.lochana.parkingassistant.databinding.ActivityMainBinding;
 import com.lochana.parkingassistant.ui.dashboard.DashboardFragment;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 import com.lochana.parkingassistant.ui.notifications.NotificationsFragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,6 +42,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // request notification_item.xml permissions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("FCM", "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+
+                    // Get new FCM registration token
+                    String token = task.getResult();
+                    Log.d("FCM", "Token: " + token);
+                });
 
         BottomNavigationView bottomNavigationView = binding.navView;
 
@@ -77,8 +107,42 @@ public class MainActivity extends AppCompatActivity {
         // Make status bar icons dark
         ViewCompat.getWindowInsetsController(getWindow().getDecorView())
                 .setAppearanceLightStatusBars(true);
+
+        // notification_item.xml handler
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "channel_id",  // ID
+                    "Default Channel",     // Name
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel.setDescription("Default Channel for Firebase Notifications");
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+
     }
 
+    public class NotificationStorage {
+        public List<NotificationModel> notifications = new ArrayList<>();
+    }
+
+    // notification_item.xml handling
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 101) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+            } else {
+                // Show explanation or disable notifications
+            }
+        }
+    }
+
+    // switch according to bottom navigation bar
     private void switchFragment(Fragment targetFragment) {
         if (targetFragment != activeFragment) {
             getSupportFragmentManager()
