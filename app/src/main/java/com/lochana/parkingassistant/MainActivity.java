@@ -52,17 +52,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(task -> {
-                    if (!task.isSuccessful()) {
-                        Log.w("FCM", "Fetching FCM registration token failed", task.getException());
-                        return;
-                    }
-
-                    // Get new FCM registration token
-                    String token = task.getResult();
-                    Log.d("FCM", "Token: " + token);
-                });
+//        FirebaseMessaging.getInstance().getToken()
+//                .addOnCompleteListener(task -> {
+//                    if (!task.isSuccessful()) {
+//                        Log.w("FCM", "Fetching FCM registration token failed", task.getException());
+//                        return;
+//                    }
+//
+//                    // Get new FCM registration token
+//                    String token = task.getResult();
+//                    Log.d("FCM", "Token: " + token);
+//                });
 
         BottomNavigationView bottomNavigationView = binding.navView;
 
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
-            return false;
+            return true;
         });
 
         // Internet check
@@ -123,10 +123,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-    }
-
-    public class NotificationStorage {
-        public List<NotificationModel> notifications = new ArrayList<>();
     }
 
     // notification_item.xml handling

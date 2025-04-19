@@ -4,13 +4,16 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.lochana.parkingassistant.AppDatabase;
 import com.lochana.parkingassistant.NotificationAdapter;
@@ -24,6 +27,7 @@ public class NotificationsFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private NotificationAdapter adapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -31,6 +35,13 @@ public class NotificationsFragment extends Fragment {
 
         recyclerView = root.findViewById(R.id.notificationRecycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        swipeRefreshLayout = root.findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this::loadNotifications);
+
+        Button clearButton = root.findViewById(R.id.clrNoticationsBtn);
+        clearButton.setOnClickListener(v -> clearAllNotifications());
+
 
         loadNotifications();
 
@@ -43,6 +54,24 @@ public class NotificationsFragment extends Fragment {
 
         adapter = new NotificationAdapter(notifications);
         recyclerView.setAdapter(adapter);
+
+        // Stop the refresh animation
+        if (swipeRefreshLayout.isRefreshing()) {
+            swipeRefreshLayout.setRefreshing(false);
+        }
+    }
+
+    // clear all notifications
+    private void clearAllNotifications() {
+        // Clear from Room
+        AppDatabase db = AppDatabase.getInstance(getContext());
+        db.notificationDao().deleteAll();
+
+        // Clear from system notification tray
+        NotificationManagerCompat.from(getContext()).cancelAll();
+
+        // Refresh RecyclerView
+        loadNotifications();
     }
 
     @Override
@@ -53,7 +82,6 @@ public class NotificationsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        //recyclerView.setAdapter(new NotificationAdapter(NotificationStorage.notifications));
     }
 
 }

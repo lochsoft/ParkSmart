@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
+    implementation(libs.androidx.swiperefreshlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
