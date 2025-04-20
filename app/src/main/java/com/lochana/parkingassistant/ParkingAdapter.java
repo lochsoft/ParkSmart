@@ -10,7 +10,10 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -41,9 +44,24 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
             holder.titleText.setText(data.getName());
             holder.priceText.setText(data.getPrice());
             holder.ratingBar.setRating((float) data.getRating());
+            holder.removeBtn.setVisibility(View.VISIBLE);
 
             holder.navBtn.setOnClickListener(v -> {
                 NavigationHelper.navigateToSelectedLocation(context, null, new GeoPoint(data.getLatitude(), data.getLongitude()));
+            });
+
+            holder.removeBtn.setOnClickListener(v -> {
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle("Remove Parking")
+                        .setMessage("Are you sure you want to remove this saved location?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            AppDatabase.getInstance(context).parkingDataDao().delete(data);
+                            parkingList.remove(data);
+                            notifyDataSetChanged();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+
             });
         } catch (Exception e) {
             Log.d("ParkingAdapter", "Error binding view holder: " + e.getMessage());
@@ -59,7 +77,7 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
 
         TextView titleText, priceText;
         RatingBar ratingBar;
-        Button navBtn;
+        Button navBtn, removeBtn;
 
         public ParkingViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -67,6 +85,7 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
             priceText = itemView.findViewById(R.id.parking_price);
             ratingBar = itemView.findViewById(R.id.parkingRating);
             navBtn = itemView.findViewById(R.id.navigateBtn);
+            removeBtn = itemView.findViewById(R.id.remove_btn);
         }
     }
 }

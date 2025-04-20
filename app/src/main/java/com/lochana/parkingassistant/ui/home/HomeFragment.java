@@ -83,7 +83,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         searchView = root.findViewById(R.id.searchAutoComplete);
         distanceBanner = root.findViewById(R.id.distanceBannar);
         nearestParkingBtn = root.findViewById(R.id.locate_user4);
-        progressBar = root.findViewById(R.id.progressBar);
         allParksBtn = root.findViewById(R.id.all_parks_btn);
         saveCurrentSpot = root.findViewById(R.id.saveCurrentSpot);
         Button mainFab = root.findViewById(R.id.controlBtn);
@@ -213,7 +212,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     // add new parking
     private void addNewParking() {
-        parkingLocationHelper.startAddingParking();
+        parkingLocationHelper.startAddingParking(false);
     }
 
     // fetching locations from firebase database
@@ -327,10 +326,10 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this);
         mapView.getOverlays().add(mapEventsOverlay); // Add MapEventsOverlay
-            }
+        }
             catch (Exception e) {
                 Toast.makeText(requireContext(), "Error setting up map: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+        }
     }
 
     @Override
@@ -454,6 +453,20 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     @Override
     public boolean longPressHelper(GeoPoint p) {
-        return false;
+        Toast.makeText(requireContext(), "Long Press at: " + p.getLatitude() + ", " + p.getLongitude(), Toast.LENGTH_SHORT).show();
+        parkingLocationHelper.startAddingParking(true);
+        parkingLocationHelper.handleMapTap(p);
+
+        // Example: Add a marker
+//        Marker marker = new Marker(mapView);
+//        marker.setPosition(p);
+//        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+//        marker.setTitle("Long-pressed location");
+//        mapView.getOverlays().add(marker);
+//        mapView.invalidate();
+
+        //parkingLocationHelper.handleMapTap(p);
+
+        return true; // Return true to indicate the event was handled
     }
 }

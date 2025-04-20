@@ -17,4 +17,7 @@ public interface ParkingDataDao {
 
     @Query("DELETE FROM parking_data")
     void deleteAll();
+
+    @androidx.room.Delete
+    void delete(ParkingData data);
 }

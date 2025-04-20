@@ -34,22 +34,30 @@ public class ParkingLocationHelper{
         this.homeFragment = homeFragment;
     }
 
-    public void startAddingParking() {
+    public void startAddingParking(boolean isLongTap) {
         Log.d("stratAddingParking", "starting adding parking");
         try {
-            new MaterialAlertDialogBuilder(context)
-                    .setTitle("Add New Parking Location")
-                    .setMessage("Tap on the map to add a new parking location")
-                    .setPositiveButton("OK", (dialog, which) -> {
-                        isAddingParking = true;
-                        newParkingMarker = new Marker(mapView);
-                        newParkingMarker.setIcon(context.getResources().getDrawable(R.drawable.parking_sign));
-                        newParkingMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                        mapView.getOverlays().add(newParkingMarker);
-                    })
-                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                    .show();
-            //Toast.makeText(context, "Tap on the map to add a parking location", Toast.LENGTH_SHORT).show();
+            if (isLongTap){
+                isAddingParking = true;
+                newParkingMarker = new Marker(mapView);
+                newParkingMarker.setIcon(context.getResources().getDrawable(R.drawable.parking_sign));
+                newParkingMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                mapView.getOverlays().add(newParkingMarker);
+            }
+            else{
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle("Add New Parking Location")
+                        .setMessage("Tap on the map to add a new parking location")
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            isAddingParking = true;
+                            newParkingMarker = new Marker(mapView);
+                            newParkingMarker.setIcon(context.getResources().getDrawable(R.drawable.parking_sign));
+                            newParkingMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                            mapView.getOverlays().add(newParkingMarker);
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                        .show();
+            }
         } catch (Exception e) {
             Log.d("startAddingParking", "Error starting adding parking" + e.getMessage());
         }
