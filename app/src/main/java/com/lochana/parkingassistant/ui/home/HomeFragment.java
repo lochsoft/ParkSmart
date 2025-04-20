@@ -97,7 +97,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         locateUserBtn.setOnClickListener(v -> locateUser());
         addParkingBtn.setOnClickListener(v -> addNewParking());
         nearestParkBtn.setOnClickListener(v -> locateNearestParking());
-        refreshBtn2.setOnClickListener(v -> fetchLocations());
 
         // Initialize LocationHelper
         locationHelper = new LocationHelper(requireContext());
@@ -144,7 +143,15 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         });
 
         // refresh btn logic
-        refreshBtn.setOnClickListener(v -> {
+        setupRefreshButton(refreshBtn);
+        setupRefreshButton(refreshBtn2);
+
+        return root;
+    }
+
+    // refresh maps locations
+    private void setupRefreshButton(Button button) {
+        button.setOnClickListener(v -> {
             new MaterialAlertDialogBuilder(requireContext())
                     .setTitle("Update Locations")
                     .setMessage("Are you sure you want to refresh the locations?")
@@ -155,8 +162,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                     .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                     .show();
         });
-
-        return root;
     }
 
     // handle the button menu
@@ -197,13 +202,10 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     // locate nearest parking
     private void locateNearestParking() {
         try {
-            progressBar.setVisibility(View.VISIBLE);
             GeoPoint userLocation = locationHelper.getUserLocation();
             Location nearest = NearestParkingFinder.findNearestParking(userLocation.getLatitude(), userLocation.getLongitude(), locations);
 
             Log.d("NearestLocation", "Nearest Location: " + nearest.getName() + ", Lat: " + nearest.getLatitude() + ", Lon: " + nearest.getLongitude());
-
-            progressBar.setVisibility(View.GONE);
 
             // Show confirmation dialog
             new MaterialAlertDialogBuilder(requireContext())
@@ -463,7 +465,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     @Override
     public boolean longPressHelper(GeoPoint p) {
-        Toast.makeText(requireContext(), "Long Press at: " + p.getLatitude() + ", " + p.getLongitude(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(requireContext(), "Long Press at: " + p.getLatitude() + ", " + p.getLongitude(), Toast.LENGTH_SHORT).show();
+        Log.d("longpresshelper","Long Press at: " + p.getLatitude() + ", " + p.getLongitude());
         parkingLocationHelper.startAddingParking(true);
         parkingLocationHelper.handleMapTap(p);
 

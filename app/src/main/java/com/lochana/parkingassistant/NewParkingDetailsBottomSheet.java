@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RatingBar;
 import android.widget.Toast;
 
@@ -44,6 +46,7 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
     private Button buttonCancel;
     RatingBar ratingBar;
     private EditText description;
+    private RadioGroup availabilityRadioGroup;
 
     public NewParkingDetailsBottomSheet(Context context, GeoPoint point, addNewLocation addNewLocation,
                                         MapView mapView, Marker newParkingMarker, ParkingLocationHelper parkingLocationHelper, ExistingParkingData existingPoint) {
@@ -63,31 +66,60 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
         editTextParkingName = view.findViewById(R.id.editTextParkingName);
         buttonSave = view.findViewById(R.id.buttonSave);
         buttonCancel = view.findViewById(R.id.buttonCancel);
-        editTextAvailability = view.findViewById(R.id.editTextParkingName2);
+        //editTextAvailability = view.findViewById(R.id.editTextParkingName2);
         price = view.findViewById(R.id.editTextParkingName3);
         ratingBar = view.findViewById(R.id.ratingBar);
         description = view.findViewById(R.id.parkingDescription);
         String documentId = existingPoint != null ? existingPoint.getDocumentId() : null;
+        availabilityRadioGroup = view.findViewById(R.id.availability_radio_group);
 
         // If editing, populate existing data
-        if (existingPoint != null) {
-            editTextParkingName.setText(existingPoint.getName());
-            editTextAvailability.setText(existingPoint.getAvailability());
-            price.setText(String.valueOf(existingPoint.getPrice()));
-            ratingBar.setRating(existingPoint.getRating());
-            description.setText(existingPoint.getDescription());
-            buttonSave.setText("Update");
-            selectedPoint = new GeoPoint(existingPoint.getLatitude(), existingPoint.getLongitude());
+        try {
+            if (existingPoint != null) {
+                editTextParkingName.setText(existingPoint.getName());
+                //editTextAvailability.setText(existingPoint.getAvailability());
+                price.setText(String.valueOf(existingPoint.getPrice()));
+                ratingBar.setRating(existingPoint.getRating());
+                description.setText(existingPoint.getDescription());
+                buttonSave.setText("Update");
+                selectedPoint = new GeoPoint(existingPoint.getLatitude(), existingPoint.getLongitude());
+
+                String valueToSelect = existingPoint.getAvailability();
+                for (int i = 0; i < availabilityRadioGroup.getChildCount(); i++) {
+                    View child = availabilityRadioGroup.getChildAt(i);
+                    if (child instanceof RadioButton) {
+                        RadioButton radioButton = (RadioButton) child;
+                        if (radioButton.getText().toString().equalsIgnoreCase(valueToSelect)) {
+                            radioButton.setChecked(true);
+                            break;
+                        }
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            Log.d("existing point new parking bottom sheet", "error " + e.getMessage());
         }
 
         buttonSave.setOnClickListener(v -> {
             try {
                 Log.d("savefunc", "passes save func");
                 String name = editTextParkingName.getText().toString().trim();
-                String availability = editTextAvailability.getText().toString().trim();
+                //String availability = editTextAvailability.getText().toString().trim();
                 String priceText = this.price.getText().toString().trim();
                 float ratingValue = ratingBar.getRating();
                 String descriptionText = description.getText().toString().trim();
+                String availability = "";
+                int selectedId = availabilityRadioGroup.getCheckedRadioButtonId();
+                if (selectedId != -1) {
+                    RadioButton selectedRadioButton = view.findViewById(selectedId);
+                    availability = selectedRadioButton.getText().toString();
+                    //Toast.makeText(context, "Selected: " + availability, Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(context, "Select availability!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 Double price = null;
                 Integer rating = null;
