@@ -19,6 +19,7 @@
             android:layout_height="wrap_content"
             android:elevation="8dp"
             android:text="Parking Location"
+            android:textColor="@color/material_dynamic_neutral40"
             android:textSize="16sp" />
 
         <TextView
@@ -31,6 +32,7 @@
             android:gravity="center"
             android:padding="0dp"
             android:text="Price"
+            android:textColor="@color/material_dynamic_neutral40"
             android:textSize="16sp" />
 
         <RatingBar
@@ -42,6 +44,7 @@
             android:elevation="8dp"
             android:isIndicator="true"
             android:numStars="5"
+            android:progressBackgroundTint="@color/material_dynamic_neutral40"
             android:progressTint="@color/purple_500"
             android:stepSize="1" />
 

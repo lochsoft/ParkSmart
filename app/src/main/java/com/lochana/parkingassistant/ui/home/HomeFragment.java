@@ -88,6 +88,17 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         Button mainFab = root.findViewById(R.id.controlBtn);
         Button refreshBtn = root.findViewById(R.id.refreshBtn);
 
+        // bootom buttons
+        Button locateUserBtn = root.findViewById(R.id.locate_user2);
+        Button addParkingBtn = root.findViewById(R.id.add_new_parking_place_button2);
+        Button nearestParkBtn = root.findViewById(R.id.locate_user3);
+        Button refreshBtn2 = root.findViewById(R.id.refreshBtn2);
+
+        locateUserBtn.setOnClickListener(v -> locateUser());
+        addParkingBtn.setOnClickListener(v -> addNewParking());
+        nearestParkBtn.setOnClickListener(v -> locateNearestParking());
+        refreshBtn2.setOnClickListener(v -> fetchLocations());
+
         // Initialize LocationHelper
         locationHelper = new LocationHelper(requireContext());
 
@@ -115,7 +126,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         // add new parking place button
         addNewLocationBtn = root.findViewById(R.id.add_new_parking_place_button);
         addNewLocationBtn.setOnClickListener(v -> addNewParking());
-        //addNewLocationBtn.setOnClickListener(v -> parkingLocationHelper.startAddingParking()); // Use ParkingLocationHelper
 
         userLocateBtn = root.findViewById(R.id.locate_user);
         userLocateBtn.setOnClickListener(v -> locateUser());

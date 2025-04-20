@@ -118,16 +118,6 @@ public class MainActivity extends AppCompatActivity {
         // Internet check
         checkInternetAndShowRetry();
 
-        // Set status bar color
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            Window window = getWindow();
-            window.setStatusBarColor(ContextCompat.getColor(this, R.color.purple_500));
-        }
-
-        // Make status bar icons dark
-        ViewCompat.getWindowInsetsController(getWindow().getDecorView())
-                .setAppearanceLightStatusBars(true);
-
         // notification_item.xml handler
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
