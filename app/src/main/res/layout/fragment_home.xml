@@ -13,9 +13,8 @@
         android:id="@+id/mapContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/scrollView2"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.9"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"> <!-- Map takes 50% of screen -->
 
@@ -53,7 +52,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginBottom="85dp"
+            android:layout_marginBottom="75dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -125,11 +124,38 @@
             android:layout_height="65dp"
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="15dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="10dp"
             android:elevation="8dp"
             android:foreground="@drawable/sharp_add_black_36"
             android:foregroundGravity="center"
             android:foregroundTint="#FAFAFA"
+            app:cornerRadius="35dp" />
+
+        <Button
+            android:id="@+id/layerChangeBtn"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="80dp"
+            android:layout_marginEnd="15dp"
+            android:elevation="8dp"
+            android:foreground="@drawable/layers"
+            android:foregroundGravity="center"
+            android:foregroundTint="#FAFAFA"
+            app:cornerRadius="35dp" />
+
+        <Button
+            android:id="@+id/infoBtn"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="150dp"
+            android:layout_marginEnd="15dp"
+            android:elevation="8dp"
+            android:foreground="@android:drawable/ic_dialog_info"
+            android:foregroundGravity="center"
+            android:foregroundTint="#FAFAFA"
+            android:hapticFeedbackEnabled="true"
             app:cornerRadius="35dp" />
 
         <Button
@@ -177,94 +203,93 @@
             android:textSize="16sp"
             android:visibility="gone"
             app:cornerRadius="30dp" />
+
+        <HorizontalScrollView
+            android:id="@+id/scrollView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"
+            android:scrollbars="horizontal|vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp">
+
+                <Button
+                    android:id="@+id/saveCurrentSpot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="5dp"
+                    android:elevation="8dp"
+                    android:padding="10dp"
+                    android:text="Save My current Spot"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    app:cornerRadius="40dp"
+                    app:icon="@drawable/sharp_add_black_36"
+                    app:iconSize="40dp" />
+
+                <Button
+                    android:id="@+id/locate_user2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="1"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/current_location"
+                    android:foregroundGravity="center"
+                    android:foregroundTint="#FAFAFA"
+                    app:cornerRadius="35dp" />
+
+                <Button
+                    android:id="@+id/add_new_parking_place_button2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="1"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/baseline_add_location_24"
+                    android:foregroundGravity="center"
+                    android:foregroundTint="#FAFAFA"
+                    app:cornerRadius="35dp" />
+
+                <Button
+                    android:id="@+id/locate_user3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="1"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/right_arrow_6150"
+                    android:foregroundGravity="center"
+                    android:foregroundTint="#FAFAFA"
+                    app:cornerRadius="35dp" />
+
+                <Button
+                    android:id="@+id/refreshBtn2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="1"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/refresh"
+                    android:foregroundGravity="center"
+                    android:foregroundTint="#FAFAFA"
+                    app:cornerRadius="35dp" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
     </FrameLayout>
 
     <!-- Scrollable content below the map -->
-    <HorizontalScrollView
-        android:id="@+id/scrollView2"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:paddingStart="3dp"
-        android:paddingEnd="3dp"
-        android:scrollbars="horizontal|vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/mapContainer">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp">
-
-            <Button
-                android:id="@+id/saveCurrentSpot"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="5dp"
-                android:elevation="8dp"
-                android:padding="10dp"
-                android:text="Save My current Spot"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                app:cornerRadius="40dp"
-                app:icon="@drawable/sharp_add_black_36"
-                app:iconSize="40dp" />
-
-            <Button
-                android:id="@+id/locate_user2"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:elevation="8dp"
-                android:foreground="@drawable/current_location"
-                android:foregroundGravity="center"
-                android:foregroundTint="#FAFAFA"
-                app:cornerRadius="35dp" />
-
-            <Button
-                android:id="@+id/add_new_parking_place_button2"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:elevation="8dp"
-                android:foreground="@drawable/baseline_add_location_24"
-                android:foregroundGravity="center"
-                android:foregroundTint="#FAFAFA"
-                app:cornerRadius="35dp" />
-
-            <Button
-                android:id="@+id/locate_user3"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:elevation="8dp"
-                android:foreground="@drawable/right_arrow_6150"
-                android:foregroundGravity="center"
-                android:foregroundTint="#FAFAFA"
-                app:cornerRadius="35dp" />
-
-            <Button
-                android:id="@+id/refreshBtn2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:elevation="8dp"
-                android:foreground="@drawable/refresh"
-                android:foregroundGravity="center"
-                android:foregroundTint="#FAFAFA"
-                app:cornerRadius="35dp" />
-
-        </LinearLayout>
-    </HorizontalScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

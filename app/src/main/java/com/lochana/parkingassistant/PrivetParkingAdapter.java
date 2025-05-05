@@ -17,13 +17,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.osmdroid.util.GeoPoint;
 
 import java.util.List;
-
-public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingViewHolder> {
+public class PrivetParkingAdapter extends RecyclerView.Adapter<PrivetParkingAdapter.ParkingViewHolder> {
 
     private Context context;
-    private List<ParkingData> parkingList;
+    private List<ParkingLocationEntity> parkingList;
 
-    public ParkingAdapter(Context context, List<ParkingData> parkingList) {
+    public PrivetParkingAdapter(Context context, List<ParkingLocationEntity> parkingList) {
         this.context = context;
         this.parkingList = parkingList;
     }
@@ -38,10 +37,10 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
     @Override
     public void onBindViewHolder(@NonNull ParkingViewHolder holder, int position) {
         try {
-            ParkingData data = parkingList.get(position);
+            ParkingLocationEntity data = parkingList.get(position);
 
             holder.titleText.setText(data.getName());
-            holder.priceText.setText(data.getPrice());
+            holder.priceText.setText(Double.toString(data.getPrice()));
             holder.ratingBar.setRating((float) data.getRating());
             holder.removeBtn.setVisibility(View.VISIBLE);
 
@@ -54,7 +53,7 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
                         .setTitle("Remove Parking")
                         .setMessage("Are you sure you want to remove this saved location?")
                         .setPositiveButton("Yes", (dialog, which) -> {
-                            AppDatabase.getInstance(context).parkingDataDao().delete(data);
+                            AppDatabase.getInstance(context).parkingLocationDao().delete(data);
                             parkingList.remove(data);
                             notifyDataSetChanged();
                         })
@@ -63,7 +62,7 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
 
             });
         } catch (Exception e) {
-            Log.d("ParkingAdapter", "Error binding view holder: " + e.getMessage());
+            Log.d("PrivetParkingAdapter", "Error binding view holder: " + e.getMessage());
         }
     }
 

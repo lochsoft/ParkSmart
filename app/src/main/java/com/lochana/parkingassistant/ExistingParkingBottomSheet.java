@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,14 +15,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import org.osmdroid.views.MapView;
+
 import java.util.List;
 
 public class ExistingParkingBottomSheet extends BottomSheetDialogFragment {
 
     private List<Location> parkingList;
+    private MapView mapView;
 
-    public ExistingParkingBottomSheet(List<Location> parkingList) {
+    public ExistingParkingBottomSheet(List<Location> parkingList, MapView mapView) {
         this.parkingList = parkingList;
+        this.mapView = mapView;
     }
 
     @Nullable
@@ -35,7 +38,7 @@ public class ExistingParkingBottomSheet extends BottomSheetDialogFragment {
         RecyclerView recyclerView = view.findViewById(R.id.parkingRecyclerView);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(new AllParkings(getContext(), parkingList));
+        recyclerView.setAdapter(new AllParkings(getContext(), parkingList, mapView, this));
 
         return view;
     }

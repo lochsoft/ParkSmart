@@ -1,5 +1,7 @@
 package com.lochana.parkingassistant;
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -10,47 +12,79 @@ import java.util.Map;
 public class addNewLocation {
 
     private FirebaseFirestore db;
+    private AppDatabase localDb;
 
-    public addNewLocation() {
+    public addNewLocation(Context context) {
         db = FirebaseFirestore.getInstance();
+        localDb = AppDatabase.getInstance(context);
     }
 
-    public void addNewLocation(String name, double latitude, double longitude, String availability, double price, Integer rating, String description, @Nullable String documentId) {
-        // Create a new document with a generated ID
-        Log.d("FirebaseHelper", "Adding new location with name: " + name);
-        Map<String, Object> location = new HashMap<>();
-        location.put("name", name);
-        location.put("latitude", latitude);
-        location.put("longitude", longitude);
-        location.put("availability",availability );
-        location.put("price", price);
-        location.put("rating", rating);
-        location.put("description", description);
+    public void addNewLocation(String name, double latitude, double longitude, String availability, double price, Integer rating, String description, @Nullable String documentId, boolean type) {
+        // if a private parking
+        if (type){
+//            ParkingLocationEntity location = new ParkingLocationEntity();
+//            location.name = name;
+//            location.latitude = latitude;
+//            location.longitude = longitude;
+//            location.availability = availability;
+//            location.price = price;
+//            location.rating = rating;
+//            location.description = description;
+//            location.type = type;
 
-        if (documentId == null){
-        // Add a new document with a generated ID
-        db.collection("locations")
-                .add(location)
-                .addOnSuccessListener(documentReference -> {
-                    Log.d("FirebaseHelper", "DocumentSnapshot added with ID: " + documentReference.getId());
-                    // Optionally handle successful addition (e.g., show a toast)
-                })
-                .addOnFailureListener(e -> {
-                    Log.w("FirebaseHelper", "Error adding document", e);
-                    // Optionally handle failure (e.g., show an error message)
-                });
+            ParkingLocationEntity location = new ParkingLocationEntity(
+                    name,
+                    latitude,
+                    longitude,
+                    availability,
+                    price,
+                    rating,
+                    description
+            );
+
+            localDb.parkingLocationDao().insert(location);
+            Log.d("LocalSave", "Saved location locally: " + name);
         }
-        else{
-            Log.d("FirebaseHelper", "Updating document with ID: " + documentId);
-            db.collection("locations")
-                    .document(documentId)
-                    .set(location)
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d("FirebaseHelper", "Document updated successfully");
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.w("FirebaseHelper", "Error updating document", e);
-                    });
+        else {
+            try {
+                // Create a new document with a generated ID
+                Log.d("FirebaseHelper", "Adding new location with name: " + name);
+                Map<String, Object> location = new HashMap<>();
+                location.put("name", name);
+                location.put("latitude", latitude);
+                location.put("longitude", longitude);
+                location.put("availability", availability);
+                location.put("price", price);
+                location.put("rating", rating);
+                location.put("description", description);
+
+                if (documentId == null) {
+                    // Add a new document with a generated ID
+                    db.collection("locations")
+                            .add(location)
+                            .addOnSuccessListener(documentReference -> {
+                                Log.d("FirebaseHelper", "DocumentSnapshot added with ID: " + documentReference.getId());
+                                // Optionally handle successful addition (e.g., show a toast)
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.w("FirebaseHelper", "Error adding document", e);
+                                // Optionally handle failure (e.g., show an error message)
+                            });
+                } else {
+                    Log.d("FirebaseHelper", "Updating document with ID: " + documentId);
+                    db.collection("locations")
+                            .document(documentId)
+                            .set(location)
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d("FirebaseHelper", "Document updated successfully");
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.w("FirebaseHelper", "Error updating document", e);
+                            });
+                }
+            } catch (Exception e) {
+                Log.e("addNewLocation", "Error adding new location", e);
+            }
         }
     }
 

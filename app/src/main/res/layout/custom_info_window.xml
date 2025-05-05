@@ -37,6 +37,18 @@
         android:orientation="vertical"
         android:padding="10dp">
 
+        <TextView
+            android:id="@+id/private_parking_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@android:drawable/ic_lock_idle_lock"
+            android:drawableTint="@color/black"
+            android:gravity="center"
+            android:text="Private Parking"
+            android:textColor="@color/material_dynamic_neutral40"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
         <RatingBar
             android:id="@+id/ratingBar2"
             android:layout_width="wrap_content"

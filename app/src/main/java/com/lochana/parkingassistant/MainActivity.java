@@ -9,8 +9,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Window;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,26 +16,20 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.lochana.parkingassistant.databinding.ActivityMainBinding;
 import com.lochana.parkingassistant.ui.dashboard.DashboardFragment;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 import com.lochana.parkingassistant.ui.notifications.NotificationsFragment;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import android.Manifest;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-
     private Fragment homeFragment;
     private Fragment notificationsFragment;
     private Fragment dashboardFragment;
@@ -132,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
                 manager.createNotificationChannel(channel);
             }
         }
-
     }
 
     private void showWelcomeNotification() {
@@ -149,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
             manager.notify(1001, builder.build());
         }
     }
-
 
     // notification_item.xml handling
     @Override

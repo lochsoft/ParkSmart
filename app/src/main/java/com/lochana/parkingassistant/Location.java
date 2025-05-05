@@ -8,8 +8,9 @@ public class Location {
     private Integer rating;
     private double price;
     private String documentid;
+    private boolean type;
 
-    public Location(String name, double latitude, double longitude, String availability, Integer rating, double price, String documentid, String description) {
+    public Location(String name, double latitude, double longitude, String availability, Integer rating, double price, String documentid, String description, boolean type) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -18,6 +19,7 @@ public class Location {
         this.price = price;
         this.documentid = documentid;
         this.description = description;
+        this.type = type;
     }
 
     public String getName() {
@@ -50,5 +52,9 @@ public class Location {
 
     public String getDescription() {
         return description;
+    }
+
+    public boolean getType() {
+        return type;
     }
 }

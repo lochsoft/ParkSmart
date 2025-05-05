@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -30,9 +31,11 @@ import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.lochana.parkingassistant.AppDatabase;
 import com.lochana.parkingassistant.ExistingParkingBottomSheet;
 import com.lochana.parkingassistant.InfoBanner;
 import com.lochana.parkingassistant.Location;
@@ -42,6 +45,7 @@ import com.lochana.parkingassistant.MapHandler;
 import com.lochana.parkingassistant.NavigationHelper;
 import com.lochana.parkingassistant.NearestParkingFinder;
 import com.lochana.parkingassistant.NewParkingDetailsBottomSheet;
+import com.lochana.parkingassistant.ParkingLocationEntity;
 import com.lochana.parkingassistant.R;
 import com.lochana.parkingassistant.RouteDrawer;
 import com.lochana.parkingassistant.addNewLocation;
@@ -55,7 +59,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private MapView mapView;
     private AutoCompleteTextView searchView;
     private ArrayAdapter<String> adapter;
-    private Button addNewLocationBtn, nav_btn;
+    private Button addNewLocationBtn, nav_btn, layerChanger;
     private FirebaseFirestore db;
     private addNewLocation addNewLocation;
     private Button userLocateBtn, nearestParkingBtn, allParksBtn, saveCurrentSpot;
@@ -74,6 +78,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private ProgressBar progressBar;
     private boolean isMenuOpen = false;
     private Polygon userAccuracyCircle;
+    private int currentLayer;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -87,12 +92,22 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         saveCurrentSpot = root.findViewById(R.id.saveCurrentSpot);
         Button mainFab = root.findViewById(R.id.controlBtn);
         Button refreshBtn = root.findViewById(R.id.refreshBtn);
+        layerChanger = root.findViewById(R.id.layerChangeBtn);
+        currentLayer = 0;
 
-        // bootom buttons
+        // bottom buttons
         Button locateUserBtn = root.findViewById(R.id.locate_user2);
         Button addParkingBtn = root.findViewById(R.id.add_new_parking_place_button2);
         Button nearestParkBtn = root.findViewById(R.id.locate_user3);
         Button refreshBtn2 = root.findViewById(R.id.refreshBtn2);
+
+        Button infoBtn = root.findViewById(R.id.infoBtn);
+        infoBtn.setOnClickListener(v -> {
+            View bottomSheetView = LayoutInflater.from(requireContext()).inflate(R.layout.pinpoint_details_bottomsheet, null);
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
+            bottomSheetDialog.setContentView(bottomSheetView);
+            bottomSheetDialog.show();
+        });
 
         locateUserBtn.setOnClickListener(v -> locateUser());
         addParkingBtn.setOnClickListener(v -> addNewParking());
@@ -102,8 +117,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         locationHelper = new LocationHelper(requireContext());
 
         // Initialize ParkingLocationHelper
-        parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this);
-        locationOverlayManager = new LocationOverlayManager(requireContext(), mapView, locationHelper, selectedDestination, new addNewLocation(), this, new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(), this)); // Initialize the marker manager
+        parkingLocationHelper = new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(requireContext()), this);
+        locationOverlayManager = new LocationOverlayManager(requireContext(), mapView, locationHelper, selectedDestination, new addNewLocation(requireContext()), this, new ParkingLocationHelper(requireContext(), mapView, new addNewLocation(requireContext()), this)); // Initialize the marker manager
 
         setupMap();
         fetchLocations();
@@ -121,7 +136,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         // nearest parking finder button
         nearestParkingBtn.setOnClickListener(v -> locateNearestParking());
 
-        addNewLocation = new addNewLocation();
+        addNewLocation = new addNewLocation(requireContext());
         // add new parking place button
         addNewLocationBtn = root.findViewById(R.id.add_new_parking_place_button);
         addNewLocationBtn.setOnClickListener(v -> addNewParking());
@@ -195,7 +210,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     // show all parks
     private void showAllParks(){
-        ExistingParkingBottomSheet bottomSheet = new ExistingParkingBottomSheet(locations);
+        ExistingParkingBottomSheet bottomSheet = new ExistingParkingBottomSheet(locations, mapView);
         bottomSheet.show(requireFragmentManager(), bottomSheet.getTag());
         }
 
@@ -208,15 +223,42 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             Log.d("NearestLocation", "Nearest Location: " + nearest.getName() + ", Lat: " + nearest.getLatitude() + ", Lon: " + nearest.getLongitude());
 
             // Show confirmation dialog
-            new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Navigate to Nearest Parking Spot?")
-                    .setMessage("Nearest location is: " + nearest.getName() + "\nDo you want to show the route?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        // User clicked Yes
-                        RouteDrawer.fetchRoute(userLocation, new GeoPoint(nearest.getLatitude(), nearest.getLongitude()), mapView);
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
+//            new MaterialAlertDialogBuilder(requireContext())
+//                    .setTitle("Navigate to Nearest Parking Spot?")
+//                    .setMessage("Nearest location is: " + nearest.getName() + "\nDo you want to show the route?")
+//                    .setPositiveButton("Yes", (dialog, which) -> {
+//                        // User clicked Yes
+//                        RouteDrawer.fetchRoute(userLocation, new GeoPoint(nearest.getLatitude(), nearest.getLongitude()), mapView);
+//                    })
+//                    .setNegativeButton("No", null)
+//                    .show();
+            // show the navigate_to_bottomsheet dialog
+            View nearest_location_bottomsheet = LayoutInflater.from(requireContext()).inflate(R.layout.navigat_to_bottomsheet, null);
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
+            bottomSheetDialog.setContentView(nearest_location_bottomsheet);
+
+            TextView nearestLocation = nearest_location_bottomsheet.findViewById(R.id.nearestLocation);
+            String nearestLocationName = "'"+nearest.getName()+"'";
+            nearestLocation.setText(nearestLocationName);
+
+            Button navigateBtn = nearest_location_bottomsheet.findViewById(R.id.buttonSave2);
+            navigateBtn.setOnClickListener(v -> {
+                try {
+                    RouteDrawer.fetchRoute(userLocation, new GeoPoint(nearest.getLatitude(), nearest.getLongitude()), mapView);
+                    //GeoPoint userLocation = locationHelper.getUserLocation();
+                    bottomSheetDialog.dismiss();
+                } catch (Exception e) {
+                    Log.d("locateNearestParking", "Error fetching route: " + e.getMessage());
+                }
+            });
+
+            Button cancelBtn = nearest_location_bottomsheet.findViewById(R.id.buttonSave3);
+            cancelBtn.setOnClickListener(v -> {
+                bottomSheetDialog.dismiss();
+            });
+
+            bottomSheetDialog.show();
+
         } catch (Exception e) {
             Log.d("locateNearestParking", "Error finding nearest location: " + e.getMessage());
         }
@@ -245,6 +287,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                                 Integer rating = document.getLong("rating").intValue();
                                 Double price = document.getDouble("price");
                                 String description = document.getString("description");
+                                boolean type = Boolean.TRUE.equals(document.getBoolean("type"));
 
                                 if (description == null) {
                                     description = "No description available";
@@ -252,13 +295,48 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
                                 Log.d("FirestoreData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
 
-                                Location location = new Location(name, latitude, longitude, availability, rating, price, document.getId(), description);
+                                Location location = new Location(name, latitude, longitude, availability, rating, price, document.getId(), description, type);
                                 // add location names to list
                                 locations.add(location);
                             }
 
-                            initializeLocations(locations);
+                            //initializeLocations(locations);
+                            //locationOverlayManager.addLocationMarkers(locations);
+
+                            // load privet parking
+                            try {
+                                AppDatabase localDb = AppDatabase.getInstance(requireContext());
+
+                                List<ParkingLocationEntity> localList = localDb.parkingLocationDao().getAllLocations();
+
+                                for (ParkingLocationEntity entity : localList) {
+                                    String name = entity.name;
+                                    Double latitude = entity.latitude;
+                                    Double longitude = entity.longitude;
+                                    String availability = entity.availability;
+                                    Integer rating = entity.rating;
+                                    Double price = entity.price;
+                                    String description = entity.description;
+                                    boolean type = true; // or use `entity.type` if you saved this as a field
+
+                                    if (description == null) {
+                                        description = "No description available";
+                                    }
+
+                                    Log.d("LocalData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
+
+                                    // binding privet parking details to locations adapter
+                                    Location location = new Location(name, latitude, longitude, availability, rating, price, null, description, type);
+                                    locations.add(location);
+
+
+                                }
+                            } catch (Exception e) {
+                                Log.d("fetch locations local", "error " + e.getMessage());
+                            }
+
                             locationOverlayManager.addLocationMarkers(locations);
+                            initializeLocations(locations);
 
                             // updating all parking view
                             allParksBtn.setOnClickListener(v -> showAllParks());
@@ -326,6 +404,21 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setMultiTouchControls(true);
+
+            layerChanger.setOnClickListener(v -> {
+                // Cycle between tile sources
+                if (currentLayer == 0) {
+                    mapView.setTileSource(TileSourceFactory.USGS_SAT);
+                    currentLayer = 1;
+                } else if (currentLayer == 1) {
+                    mapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
+                    currentLayer = 2;
+                } else {
+                    mapView.setTileSource(TileSourceFactory.MAPNIK);
+                    currentLayer = 0;
+                }
+                mapView.invalidate(); // Refresh map
+            });
 
         if (locationHelper.checkLocationPermission()) {
             locateUser();
@@ -403,7 +496,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 userMarker = new Marker(mapView);
                 userMarker.setIcon(getResources().getDrawable(R.drawable.userlocation));
                 userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                userMarker.setTitle("You're Here!");
+                userMarker.setTitle("You're Here on accuracy to 50m!");
                 // set info window
                 userMarker.setInfoWindow(new InfoBanner(R.layout.info_banner, mapView));
                 mapView.getOverlays().add(userMarker);
@@ -430,7 +523,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 userAccuracyCircle = new Polygon(); // Create a polygon once
                 userAccuracyCircle.setStrokeColor(Color.parseColor("#3366AA")); // Border color
                 userAccuracyCircle.setFillColor(Color.parseColor("#503366AA")); // Fill color with transparency
-                userAccuracyCircle.setStrokeWidth(2f);
+                userAccuracyCircle.setStrokeWidth(0f);
                 mapView.getOverlays().add(userAccuracyCircle); // Add only once
             }
 
@@ -466,19 +559,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     @Override
     public boolean longPressHelper(GeoPoint p) {
         //Toast.makeText(requireContext(), "Long Press at: " + p.getLatitude() + ", " + p.getLongitude(), Toast.LENGTH_SHORT).show();
-        Log.d("longpresshelper","Long Press at: " + p.getLatitude() + ", " + p.getLongitude());
         parkingLocationHelper.startAddingParking(true);
         parkingLocationHelper.handleMapTap(p);
-
-        // Example: Add a marker
-//        Marker marker = new Marker(mapView);
-//        marker.setPosition(p);
-//        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-//        marker.setTitle("Long-pressed location");
-//        mapView.getOverlays().add(marker);
-//        mapView.invalidate();
-
-        //parkingLocationHelper.handleMapTap(p);
 
         return true; // Return true to indicate the event was handled
     }

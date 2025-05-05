@@ -11,9 +11,10 @@ public class ExistingParkingData {
     private int rating;
     private String description;
     private String documentId;
+    private boolean type;
 
     public ExistingParkingData(String name, double latitude, double longitude, String availability,
-                               String price, int rating, String description, String documentId) {
+                               String price, int rating, String description, String documentId, boolean type) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -22,6 +23,7 @@ public class ExistingParkingData {
         this.rating = rating;
         this.description = description;
         this.documentId = documentId;
+        this.type = type;
 
         Log.d("ExistingParkingData", name + " " + latitude + " " + longitude + " " + availability + " " + price + " " + rating + " " + description);
     }
@@ -35,6 +37,10 @@ public class ExistingParkingData {
     public int getRating() { return rating; }
     public String getDescription() { return description;}
     public String getDocumentId() { return documentId;}
+
+    public boolean getType() {
+        return type;
+    }
 
     // Optional: Setters if you want it to be mutable
 }

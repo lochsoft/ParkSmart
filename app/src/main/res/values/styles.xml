@@ -6,7 +6,7 @@
     </style>
 
     <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@drawable/textviewbg</item>
+        <item name="android:background">@drawable/location_details_banner</item>
         <item name="android:layout_height">match_parent</item>
     </style>
 </resources>

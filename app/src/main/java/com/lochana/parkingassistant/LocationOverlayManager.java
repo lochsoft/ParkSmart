@@ -18,7 +18,6 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
-import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,6 +26,8 @@ import com.lochana.parkingassistant.ui.home.HomeFragment;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -60,7 +61,8 @@ public class LocationOverlayManager {
 
         for (Location location : locations) {
             GeoPoint point = new GeoPoint(location.getLatitude(), location.getLongitude());
-            addMarker(point, location);
+            String availability = location.getAvailability();
+            addMarker(point, location, availability);
         }
 
         mapView.invalidate(); // Refresh the map to display markers
@@ -77,22 +79,47 @@ public class LocationOverlayManager {
     /**
      * Adds a single marker at the specified location.
      */
-    private void addMarker(GeoPoint point, Location location) {
-        Marker marker = new Marker(mapView);
-        marker.setPosition(point);
-        marker.setTitle(location.getName());
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+    private void addMarker(GeoPoint point, Location location, String availability) {
+        try {
+            Marker marker = new Marker(mapView);
+            marker.setPosition(point);
+            marker.setTitle(location.getName());
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
-        Drawable icon = ContextCompat.getDrawable(context, R.drawable.parking_sign);
-        marker.setIcon(icon);
+            Drawable icon = ContextCompat.getDrawable(context, R.drawable.parking_sign);
+            //marker.setIcon(icon);
 
-        // Pass both marker and location
-        marker.setOnMarkerClickListener((clickedMarker, vw) -> {
-            showParkingBottomSheet(location, clickedMarker);
-            return true;
-        });
+            Drawable icon_plenty_of_space = ContextCompat.getDrawable(context, R.drawable.plenty_of_space);
+            Drawable icon_limited_space = ContextCompat.getDrawable(context, R.drawable.low_space);
+            Drawable icon_no_space = ContextCompat.getDrawable(context, R.drawable.no_spaces_available);
+            Drawable icon_unknown_space = ContextCompat.getDrawable(context, R.drawable.unknown_availability);
+            Drawable icon_privet = ContextCompat.getDrawable(context, R.drawable.privet_parking);
 
-        mapView.getOverlays().add(marker);
+            if (Objects.equals(availability, "Plenty of Space")) {
+                marker.setIcon(icon_plenty_of_space);
+            } else if (Objects.equals(availability, "Limited Space")) {
+                marker.setIcon(icon_limited_space);
+            }else if (Objects.equals(availability, "No Space")) {
+                marker.setIcon(icon_no_space);
+            }else if (Objects.equals(availability, "Unknown Availability")) {
+                marker.setIcon(icon_unknown_space);
+            }else{
+                marker.setIcon(icon);
+            }
+            if (location.getType()){
+                marker.setIcon(icon_privet);
+            }
+
+            // Pass both marker and location
+            marker.setOnMarkerClickListener((clickedMarker, vw) -> {
+                showParkingBottomSheet(location, clickedMarker);
+                return true;
+            });
+
+            mapView.getOverlays().add(marker);
+        } catch (Exception e) {
+            Log.d("addMarker", "location overlay manager error " + e.getMessage());
+        }
     }
 
     private void showParkingBottomSheet(Location location, Marker marker) {
@@ -114,9 +141,10 @@ public class LocationOverlayManager {
         Button editButton = bottomSheetView.findViewById(R.id.button3);
         TextView description = bottomSheetView.findViewById(R.id.textView3);
         Button saveButton = bottomSheetView.findViewById(R.id.button2);
+        TextView private_indicator = bottomSheetView.findViewById(R.id.private_parking_indicator);
 
         // setting data to existing data class
-        selectedPoint = new ExistingParkingData(location.getName(), location.getLatitude(), location.getLongitude(), location.getAvailability(), location.getPrice(), location.getRating(), location.getDescription(), location.getDocumentid());
+        selectedPoint = new ExistingParkingData(location.getName(), location.getLatitude(), location.getLongitude(), location.getAvailability(), location.getPrice(), location.getRating(), location.getDescription(), location.getDocumentid(), location.getType());
 
         /// setting informations of locations ///
         title.setText(location.getName());
@@ -125,16 +153,27 @@ public class LocationOverlayManager {
         ratingBar.setRating(location.getRating());
         description.setText(location.getDescription());
 
+        if (location.getType()){
+            private_indicator.setVisibility(View.VISIBLE);
+        }
+
         navigateButton.setOnClickListener(v -> {
             GeoPoint userLocation = locationHelper.getUserLocation();
             GeoPoint destination = new GeoPoint(location.getLatitude(), location.getLongitude());
             NavigationHelper.navigateToSelectedLocation(this.context, userLocation, destination);
         });
 
+        // location deleting option
         deleteButton.setOnClickListener(v -> {
-            deleteLocationFromFirestore(location.getDocumentid(), marker);
-            bottomSheetDialog.dismiss(); // close the bottom sheet after deletion
+            try {
+                deleteLocationFromFirestore(location.getDocumentid(), marker);
+                bottomSheetDialog.dismiss(); // close the bottom sheet after deletion
+            } catch (Exception e) {
+                Log.d("deleteLocations", "error " + e.getMessage());
+                //deleteLocationFromFirestore(null, marker);
+            }
         });
+
         editButton.setOnClickListener(v -> {
             editLocations(selectedDestination);
             bottomSheetDialog.dismiss(); // close the bottom sheet after deletion
@@ -158,7 +197,7 @@ public class LocationOverlayManager {
         imageRecyclerView.setAdapter(imageAdapter);
 
         // Close info window when bottom sheet is dismissed
-        bottomSheetDialog.setOnDismissListener(dialog -> marker.closeInfoWindow());
+        //bottomSheetDialog.setOnDismissListener(dialog -> marker.closeInfoWindow());
 
         bottomSheetDialog.show();
         } catch (Exception e) {
@@ -193,21 +232,26 @@ public class LocationOverlayManager {
                     .setTitle("Confirm Location deletion")
                     .setMessage("Are you sure you want to delete this location?")
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        FirebaseFirestore db = FirebaseFirestore.getInstance();
-                        db.collection("locations").document(documentId)
-                                .delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(context, "Location Deleted", Toast.LENGTH_SHORT).show();
-                                    mapView.getOverlays().remove(marker);
-                                    mapView.invalidate();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(context, "Error deleting", Toast.LENGTH_SHORT).show();
-                                });
-                        marker.closeInfoWindow();
-                        HomeFragment homeFragment = parkingLocationHelper.getHomeFragment();
-                        if (homeFragment != null) {
-                            homeFragment.fetchLocations();
+                        if (documentId != null) {
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection("locations").document(documentId)
+                                    .delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        Toast.makeText(context, "Location Deleted", Toast.LENGTH_SHORT).show();
+                                        mapView.getOverlays().remove(marker);
+                                        mapView.invalidate();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(context, "Error deleting", Toast.LENGTH_SHORT).show();
+                                    });
+                            marker.closeInfoWindow();
+                            HomeFragment homeFragment = parkingLocationHelper.getHomeFragment();
+                            if (homeFragment != null) {
+                                homeFragment.fetchLocations();
+                            }
+                        }else{
+                            /// delete from local storage
+
                         }
 
                     })

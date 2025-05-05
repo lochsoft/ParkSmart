@@ -19,10 +19,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.lochana.parkingassistant.addNewLocation;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 
 import org.osmdroid.util.GeoPoint;
@@ -47,6 +47,7 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
     RatingBar ratingBar;
     private EditText description;
     private RadioGroup availabilityRadioGroup;
+    private SwitchCompat privateSwitch;
 
     public NewParkingDetailsBottomSheet(Context context, GeoPoint point, addNewLocation addNewLocation,
                                         MapView mapView, Marker newParkingMarker, ParkingLocationHelper parkingLocationHelper, ExistingParkingData existingPoint) {
@@ -72,6 +73,7 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
         description = view.findViewById(R.id.parkingDescription);
         String documentId = existingPoint != null ? existingPoint.getDocumentId() : null;
         availabilityRadioGroup = view.findViewById(R.id.availability_radio_group);
+        privateSwitch= view.findViewById(R.id.private_switch);
 
         // If editing, populate existing data
         try {
@@ -83,6 +85,7 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
                 description.setText(existingPoint.getDescription());
                 buttonSave.setText("Update");
                 selectedPoint = new GeoPoint(existingPoint.getLatitude(), existingPoint.getLongitude());
+                privateSwitch.setChecked(existingPoint.getType());
 
                 String valueToSelect = existingPoint.getAvailability();
                 for (int i = 0; i < availabilityRadioGroup.getChildCount(); i++) {
@@ -102,67 +105,69 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
         }
 
         buttonSave.setOnClickListener(v -> {
-            try {
-                Log.d("savefunc", "passes save func");
-                String name = editTextParkingName.getText().toString().trim();
-                //String availability = editTextAvailability.getText().toString().trim();
-                String priceText = this.price.getText().toString().trim();
-                float ratingValue = ratingBar.getRating();
-                String descriptionText = description.getText().toString().trim();
-                String availability = "";
-                int selectedId = availabilityRadioGroup.getCheckedRadioButtonId();
-                if (selectedId != -1) {
-                    RadioButton selectedRadioButton = view.findViewById(selectedId);
-                    availability = selectedRadioButton.getText().toString();
-                    //Toast.makeText(context, "Selected: " + availability, Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    Toast.makeText(context, "Select availability!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Double price = null;
-                Integer rating = null;
-
+            boolean isPrivate = privateSwitch.isChecked();
                 try {
-                    if (!priceText.isEmpty()) {
-                        price = Double.parseDouble(priceText);
-                    }
-                } catch (NumberFormatException e) {
-                    price = null;
-                    Toast.makeText(context, "Price should be a Number!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                    Log.d("savefunc", "passes save func");
+                    String name = editTextParkingName.getText().toString().trim();
+                    //String availability = editTextAvailability.getText().toString().trim();
+                    String priceText = this.price.getText().toString().trim();
+                    float ratingValue = ratingBar.getRating();
+                    String descriptionText = description.getText().toString().trim();
+                    String availability = "";
 
-                if (ratingValue > 0) {
-                    rating = (int) ratingValue;
-                }
-
-                if (!name.isEmpty() && !availability.isEmpty() && price != null && rating != null) {
-                    // All inputs are valid, proceed
-                    Log.d("updateLocationTest", name + " " + selectedPoint.getLatitude() + " " + selectedPoint.getLongitude() + " " + availability + " " + price + " " + rating + " " + descriptionText + " " + documentId);
-                    addNewLocation.addNewLocation(name, selectedPoint.getLatitude(), selectedPoint.getLongitude(), availability, price, rating, descriptionText, documentId);
-                    if (existingPoint == null) {
-                        parkingLocationHelper.setAddingParking(false); // Update the flag in the helper
-                        newParkingMarker.remove(mapView);
-                        mapView.invalidate();
-
-                        Toast.makeText(context, "Parking location added", Toast.LENGTH_SHORT).show();
+                    int selectedId = availabilityRadioGroup.getCheckedRadioButtonId();
+                    if (selectedId != -1) {
+                        RadioButton selectedRadioButton = view.findViewById(selectedId);
+                        availability = selectedRadioButton.getText().toString();
+                        //Toast.makeText(context, "Selected: " + availability, Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(context, "Parking location updated", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Select availability!", Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                    HomeFragment homeFragment = parkingLocationHelper.getHomeFragment();
-                    if (homeFragment != null) {
-                        homeFragment.fetchLocations();
+
+                    Double price = null;
+                    Integer rating = null;
+
+                    try {
+                        if (!priceText.isEmpty()) {
+                            price = Double.parseDouble(priceText);
+                        }
+                    } catch (NumberFormatException e) {
+                        price = null;
+                        Toast.makeText(context, "Price should be a Number!", Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                    dismiss(); // Dismiss the bottom sheet
-                } else {
-                    Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_SHORT).show();
+
+                    if (ratingValue > 0) {
+                        rating = (int) ratingValue;
+                    }
+
+                    if (!name.isEmpty() && !availability.isEmpty() && price != null && rating != null) {
+                        // All inputs are valid, proceed
+                        Log.d("updateLocationTest", name + " " + selectedPoint.getLatitude() + " " + selectedPoint.getLongitude() + " " + availability + " " + price + " " + rating + " " + descriptionText + " " + documentId);
+                        addNewLocation.addNewLocation(name, selectedPoint.getLatitude(), selectedPoint.getLongitude(), availability, price, rating, descriptionText, documentId, isPrivate);
+                        if (existingPoint == null) {
+                            parkingLocationHelper.setAddingParking(false); // Update the flag in the helper
+                            newParkingMarker.remove(mapView);
+                            mapView.invalidate();
+
+                            Toast.makeText(context, "Parking location added", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(context, "Parking location updated", Toast.LENGTH_SHORT).show();
+                        }
+                        HomeFragment homeFragment = parkingLocationHelper.getHomeFragment();
+                        if (homeFragment != null) {
+                            homeFragment.fetchLocations();
+                        }
+                        dismiss(); // Dismiss the bottom sheet
+                    } else {
+                        Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.d("UpdateError", "error " + e.getMessage());
                 }
-            } catch (Exception e) {
-                Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.d("UpdateError","error " + e.getMessage());
-            }});
+        });
 
         buttonCancel.setOnClickListener(v -> {
             try {

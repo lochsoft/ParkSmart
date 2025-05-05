@@ -2,20 +2,14 @@
 
 package com.lochana.parkingassistant;
 
-import static android.app.ProgressDialog.show;
-
 import android.content.Context;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.lochana.parkingassistant.addNewLocation;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 
 public class ParkingLocationHelper{
