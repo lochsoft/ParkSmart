@@ -1,5 +1,6 @@
 package com.lochana.parkingassistant.ui.home;
 
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
 
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -427,7 +429,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         }
 
         mapView.setMinZoomLevel(5.0);
-        mapView.setMaxZoomLevel(20.0);
+        mapView.setMaxZoomLevel(23.0);
 
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this);
         mapView.getOverlays().add(mapEventsOverlay); // Add MapEventsOverlay
@@ -452,42 +454,66 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         }
     }
 
+//    private void locateUser() {
+//        try {
+//        /*
+//        GeoPoint userLocation = locationHelper.getUserLocation();
+//        if (userLocation != null) {
+//            mapView.getController().animateTo(userLocation);
+//            mapView.getController().setZoom(20.0); // Zoom in closer to the user
+//
+//            // Update the marker's position
+//            updateUserMarkerPosition(userLocation);
+//        } else {
+//            // Optionally set a default location or show a message
+//            mapView.getController().setZoom(20.0);
+//            mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718));
+//            Toast.makeText(requireContext(), "Could not get user location", Toast.LENGTH_SHORT).show();
+//        }*/
+//
+//            LocationHelper locationHelper = new LocationHelper(requireContext());
+//            locationHelper.initFusedLocation();
+//
+//            locationHelper.getAccurateLocation(location -> {
+//                if (location != null) {
+//                    GeoPoint userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+//                    mapView.getController().animateTo(userLocation);
+//                    mapView.getController().setZoom(20.0);
+//                    updateUserMarkerPosition(userLocation); // update the marker position
+//                    Log.d("UserLocation", "Lat: " + userLocation.getLatitude() + ", Lon: " + userLocation.getLongitude());
+//                    // You can now place your pin here
+//                } else {
+//                    Toast.makeText(getContext(), "Unable to get current location", Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        } catch (Exception e) {
+//            Log.d("LocateUser", "Error locating user: " + e.getMessage());
+//            Toast.makeText(requireContext(), "Error locating user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//        }
+//    }
+
+    @SuppressLint("MissingPermission")
     private void locateUser() {
-        try {
-        /*
-        GeoPoint userLocation = locationHelper.getUserLocation();
-        if (userLocation != null) {
-            mapView.getController().animateTo(userLocation);
-            mapView.getController().setZoom(20.0); // Zoom in closer to the user
-
-            // Update the marker's position
-            updateUserMarkerPosition(userLocation);
-        } else {
-            // Optionally set a default location or show a message
-            mapView.getController().setZoom(20.0);
-            mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718));
-            Toast.makeText(requireContext(), "Could not get user location", Toast.LENGTH_SHORT).show();
-        }*/
-
-            LocationHelper locationHelper = new LocationHelper(requireContext());
-            locationHelper.initFusedLocation();
-
-            locationHelper.getAccurateLocation(location -> {
-                if (location != null) {
-                    GeoPoint userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
-                    mapView.getController().animateTo(userLocation);
-                    mapView.getController().setZoom(19.0);
-                    updateUserMarkerPosition(userLocation); // update the marker position
-                    Log.d("UserLocation", "Lat: " + userLocation.getLatitude() + ", Lon: " + userLocation.getLongitude());
-                    // You can now place your pin here
-                } else {
-                    Toast.makeText(getContext(), "Unable to get current location", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } catch (Exception e) {
-            Log.d("LocateUser", "Error locating user: " + e.getMessage());
-            Toast.makeText(requireContext(), "Error locating user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        if (!locationHelper.checkLocationPermission()) {
+            locationHelper.requestLocationPermission(this, LOCATION_PERMISSION_REQUEST_CODE);
+            return;
         }
+
+        locationHelper.getFusedLocationClient().getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        GeoPoint userPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                        locationHelper.setAccuracy(location.getAccuracy()); // store accuracy inside LocationHelper
+                        updateUserMarkerPosition(userPoint);
+                        mapView.getController().animateTo(userPoint);
+                        mapView.getController().setZoom(20.0);
+                    } else {
+                        Toast.makeText(requireContext(), "Location not available", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Location error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void updateUserMarkerPosition(GeoPoint point) {
@@ -496,7 +522,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 userMarker = new Marker(mapView);
                 userMarker.setIcon(getResources().getDrawable(R.drawable.userlocation));
                 userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                userMarker.setTitle("You're Here on accuracy to 50m!");
+                double accuracy = locationHelper.getAccuracy();
+                userMarker.setTitle("You're Here on accuracy to " + String.format("%.2f", accuracy) + "m!");
                 // set info window
                 userMarker.setInfoWindow(new InfoBanner(R.layout.info_banner, mapView));
                 mapView.getOverlays().add(userMarker);
@@ -527,7 +554,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 mapView.getOverlays().add(userAccuracyCircle); // Add only once
             }
 
-            userAccuracyCircle.setPoints(Polygon.pointsAsCircle(userLocation, 50)); // Just update points
+            double accuracy = locationHelper.getAccuracy();
+            userAccuracyCircle.setPoints(Polygon.pointsAsCircle(userLocation, accuracy)); // Just update points
             mapView.invalidate(); // Refresh the map
         } catch (Exception e) {
             Log.d("showUserAccuracyCircle", "Error showing user accuracy circle: " + e.getMessage());

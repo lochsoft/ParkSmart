@@ -163,6 +163,9 @@ public class LocationOverlayManager {
             NavigationHelper.navigateToSelectedLocation(this.context, userLocation, destination);
         });
 
+        // hide delete button if a privet park
+            deleteButton.setVisibility(View.GONE);
+
         // location deleting option
         deleteButton.setOnClickListener(v -> {
             try {
@@ -232,7 +235,6 @@ public class LocationOverlayManager {
                     .setTitle("Confirm Location deletion")
                     .setMessage("Are you sure you want to delete this location?")
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        if (documentId != null) {
                             FirebaseFirestore db = FirebaseFirestore.getInstance();
                             db.collection("locations").document(documentId)
                                     .delete()
@@ -249,11 +251,6 @@ public class LocationOverlayManager {
                             if (homeFragment != null) {
                                 homeFragment.fetchLocations();
                             }
-                        }else{
-                            /// delete from local storage
-
-                        }
-
                     })
                     .setNegativeButton("No", (dialog, which) -> {
                         dialog.dismiss(); // Close the dialog

@@ -50,15 +50,15 @@
                 android:id="@+id/private_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/purple_500"
-                android:buttonTint="@color/purple_500"
+                android:layout_weight="0.1"
                 android:gravity="center"
-                android:text="Private "
+                android:text="Private"
                 android:textColor="@color/material_dynamic_neutral30"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:thumbTint="@color/purple_500"
-                android:trackTint="@color/purple_200" />
+                app:thumbTint="@color/purple_500"
+                app:trackTint="@color/material_dynamic_neutral70" />
+
         </LinearLayout>
 
         <EditText
