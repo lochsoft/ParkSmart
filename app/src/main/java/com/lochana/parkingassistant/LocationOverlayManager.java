@@ -155,6 +155,8 @@ public class LocationOverlayManager {
 
         if (location.getType()){
             private_indicator.setVisibility(View.VISIBLE);
+            // hide delete button if a privet park
+            deleteButton.setVisibility(View.GONE);
         }
 
         navigateButton.setOnClickListener(v -> {
@@ -162,9 +164,6 @@ public class LocationOverlayManager {
             GeoPoint destination = new GeoPoint(location.getLatitude(), location.getLongitude());
             NavigationHelper.navigateToSelectedLocation(this.context, userLocation, destination);
         });
-
-        // hide delete button if a privet park
-            deleteButton.setVisibility(View.GONE);
 
         // location deleting option
         deleteButton.setOnClickListener(v -> {

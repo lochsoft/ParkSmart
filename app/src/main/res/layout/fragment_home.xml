@@ -48,88 +48,97 @@
             android:textSize="16sp" />
 
         <LinearLayout
-            android:id="@+id/btnMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginBottom="75dp"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:layout_marginBottom="50dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/btnMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginBottom="5dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/all_parks_btn"
+                    android:layout_width="55dp"
+                    android:layout_height="65dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="15dp"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/all_parking"
+                    android:foregroundGravity="center"
+                    app:cornerRadius="35dp" />
+
+                <Button
+                    android:id="@+id/locate_user4"
+                    android:layout_width="55dp"
+                    android:layout_height="65dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="15dp"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/right_arrow_6150"
+                    android:foregroundGravity="center"
+                    android:foregroundTint="#FAFAFA"
+                    app:cornerRadius="35dp" />
+
+                <Button
+                    android:id="@+id/add_new_parking_place_button"
+                    android:layout_width="55dp"
+                    android:layout_height="65dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="15dp"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/baseline_add_location_24"
+                    android:foregroundGravity="center"
+                    android:foregroundTint="#FAFAFA"
+                    app:cornerRadius="35dp" />
+
+                <Button
+                    android:id="@+id/refreshBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="65dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="15dp"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/refresh"
+                    android:foregroundGravity="center"
+                    android:foregroundTint="#FAFAFA"
+                    app:cornerRadius="35dp" />
+
+                <Button
+                    android:id="@+id/locate_user"
+                    android:layout_width="55dp"
+                    android:layout_height="65dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="15dp"
+                    android:elevation="8dp"
+                    android:foreground="@drawable/current_location"
+                    android:foregroundGravity="center"
+                    android:foregroundTint="#FAFAFA"
+                    app:cornerRadius="35dp" />
+
+            </LinearLayout>
 
             <Button
-                android:id="@+id/all_parks_btn"
+                android:id="@+id/controlBtn"
                 android:layout_width="55dp"
                 android:layout_height="65dp"
                 android:layout_gravity="bottom|end"
                 android:layout_marginEnd="15dp"
+                android:layout_marginBottom="10dp"
                 android:elevation="8dp"
-                android:foreground="@drawable/all_parking"
-                android:foregroundGravity="center"
-                app:cornerRadius="35dp" />
-
-            <Button
-                android:id="@+id/locate_user4"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="15dp"
-                android:elevation="8dp"
-                android:foreground="@drawable/right_arrow_6150"
+                android:foreground="@drawable/sharp_add_black_36"
                 android:foregroundGravity="center"
                 android:foregroundTint="#FAFAFA"
                 app:cornerRadius="35dp" />
-
-            <Button
-                android:id="@+id/add_new_parking_place_button"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="15dp"
-                android:elevation="8dp"
-                android:foreground="@drawable/baseline_add_location_24"
-                android:foregroundGravity="center"
-                android:foregroundTint="#FAFAFA"
-                app:cornerRadius="35dp" />
-
-            <Button
-                android:id="@+id/refreshBtn"
-                android:layout_width="match_parent"
-                android:layout_height="65dp"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="15dp"
-                android:elevation="8dp"
-                android:foreground="@drawable/refresh"
-                android:foregroundGravity="center"
-                android:foregroundTint="#FAFAFA"
-                app:cornerRadius="35dp" />
-
-            <Button
-                android:id="@+id/locate_user"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="15dp"
-                android:elevation="8dp"
-                android:foreground="@drawable/current_location"
-                android:foregroundGravity="center"
-                android:foregroundTint="#FAFAFA"
-                app:cornerRadius="35dp" />
-
         </LinearLayout>
 
         <!-- Distance banner -->
-        <Button
-            android:id="@+id/controlBtn"
-            android:layout_width="55dp"
-            android:layout_height="65dp"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="15dp"
-            android:layout_marginBottom="10dp"
-            android:elevation="8dp"
-            android:foreground="@drawable/sharp_add_black_36"
-            android:foregroundGravity="center"
-            android:foregroundTint="#FAFAFA"
-            app:cornerRadius="35dp" />
 
         <Button
             android:id="@+id/layerChangeBtn"
@@ -196,7 +205,7 @@
             android:layout_width="wrap_content"
             android:layout_height="60dp"
             android:layout_gravity="bottom|center"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="65dp"
             android:foregroundTint="#FFFFFF"
             android:text="Navigate to Parking"
             android:textColor="#FFFFFF"
@@ -212,7 +221,7 @@
             android:paddingStart="3dp"
             android:paddingEnd="3dp"
             android:scrollbars="horizontal|vertical"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -246,6 +255,7 @@
                     android:foreground="@drawable/current_location"
                     android:foregroundGravity="center"
                     android:foregroundTint="#FAFAFA"
+                    android:visibility="gone"
                     app:cornerRadius="35dp" />
 
                 <Button
@@ -259,6 +269,7 @@
                     android:foreground="@drawable/baseline_add_location_24"
                     android:foregroundGravity="center"
                     android:foregroundTint="#FAFAFA"
+                    android:visibility="gone"
                     app:cornerRadius="35dp" />
 
                 <Button
@@ -272,6 +283,7 @@
                     android:foreground="@drawable/right_arrow_6150"
                     android:foregroundGravity="center"
                     android:foregroundTint="#FAFAFA"
+                    android:visibility="gone"
                     app:cornerRadius="35dp" />
 
                 <Button
@@ -285,6 +297,7 @@
                     android:foreground="@drawable/refresh"
                     android:foregroundGravity="center"
                     android:foregroundTint="#FAFAFA"
+                    android:visibility="gone"
                     app:cornerRadius="35dp" />
 
             </LinearLayout>

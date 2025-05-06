@@ -43,6 +43,7 @@ public class PrivetParkingAdapter extends RecyclerView.Adapter<PrivetParkingAdap
             holder.priceText.setText(Double.toString(data.getPrice()));
             holder.ratingBar.setRating((float) data.getRating());
             holder.removeBtn.setVisibility(View.VISIBLE);
+            holder.removeBtn.setText("Delete");
 
             holder.navBtn.setOnClickListener(v -> {
                 NavigationHelper.navigateToSelectedLocation(context, null, new GeoPoint(data.getLatitude(), data.getLongitude()));
@@ -50,8 +51,8 @@ public class PrivetParkingAdapter extends RecyclerView.Adapter<PrivetParkingAdap
 
             holder.removeBtn.setOnClickListener(v -> {
                 new MaterialAlertDialogBuilder(context)
-                        .setTitle("Remove Parking")
-                        .setMessage("Are you sure you want to remove this saved location?")
+                        .setTitle("Delete Privet Parking")
+                        .setMessage("Are you sure you want to delete this Privet location?")
                         .setPositiveButton("Yes", (dialog, which) -> {
                             AppDatabase.getInstance(context).parkingLocationDao().delete(data);
                             parkingList.remove(data);

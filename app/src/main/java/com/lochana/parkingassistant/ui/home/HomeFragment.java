@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -24,6 +25,9 @@ import androidx.fragment.app.Fragment;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -53,6 +57,8 @@ import com.lochana.parkingassistant.RouteDrawer;
 import com.lochana.parkingassistant.addNewLocation;
 import com.lochana.parkingassistant.ParkingLocationHelper; // Import the helper class
 
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,11 +82,10 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private LocationOverlayManager locationOverlayManager;
     private TextView distanceBanner;
     private GeoPoint selectedDestination; // To store the selected location
-    private HomeFragment HomeFragment;
-    private ProgressBar progressBar;
     private boolean isMenuOpen = false;
     private Polygon userAccuracyCircle;
     private int currentLayer;
+    private boolean isFollowingUser = true;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -163,6 +168,12 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         setupRefreshButton(refreshBtn);
         setupRefreshButton(refreshBtn2);
 
+        // rotate to user heading direction
+        locationHelper.setHeadingListener(azimuth -> {
+            mapView.setMapOrientation(azimuth);
+            mapView.invalidate();
+        });
+
         return root;
     }
 
@@ -195,7 +206,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             mainFab.setForeground(ContextCompat.getDrawable(requireContext(), openIconRes));
         }
     }
-
 
     // save current parking spot
     private void saveMyCurrentSpot(GeoPoint point){
@@ -406,6 +416,10 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setMultiTouchControls(true);
+        // Create and add the rotation gesture overlay
+        RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(mapView);
+        rotationGestureOverlay.setEnabled(true);
+        mapView.getOverlays().add(rotationGestureOverlay);
 
             layerChanger.setOnClickListener(v -> {
                 // Cycle between tile sources
@@ -433,10 +447,33 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this);
         mapView.getOverlays().add(mapEventsOverlay); // Add MapEventsOverlay
+
+        /// update user location when changed
+        locationHelper.startContinuousLocationUpdates(location -> {
+            GeoPoint userPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+            locationHelper.setAccuracy(location.getAccuracy());
+            updateUserMarkerPosition(userPoint);
+        });
+
+        mapView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN ||
+                        event.getAction() == MotionEvent.ACTION_MOVE) {
+                    stopAutoRotation();
+                }
+                return false; // Let MapView also handle the event normally
+            }
+        });
+
         }
             catch (Exception e) {
                 Toast.makeText(requireContext(), "Error setting up map: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void stopAutoRotation() {
+        locationHelper.stopCompass();
     }
 
     @Override
@@ -494,6 +531,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
     @SuppressLint("MissingPermission")
     private void locateUser() {
+        locationHelper.startCompass();
         if (!locationHelper.checkLocationPermission()) {
             locationHelper.requestLocationPermission(this, LOCATION_PERMISSION_REQUEST_CODE);
             return;
@@ -568,6 +606,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         if (mapView != null) {
             mapView.onResume();
         }
+        locationHelper.startCompass();
+
     }
 
     @Override
@@ -576,6 +616,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         if (mapView != null) {
             mapView.onPause();
         }
+        //locationHelper.stopLocationUpdates();
+        locationHelper.stopCompass();
     }
 
     @Override

@@ -4,6 +4,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.util.Log;
@@ -27,19 +31,42 @@ public class LocationHelper {
 
     private final Context context;
     private FusedLocationProviderClient fusedLocationClient;
-    private LocationCallback locationCallback;
+    private LocationCallback singleLocationCallback;
+    private LocationCallback continuousLocationCallback;
     private float accuracy = 50f; // default 50m if no data yet
 
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private Sensor magnetometer;
+    private float[] gravity;
+    private float[] geomagnetic;
+    private HeadingListener headingListener;
+    private float currentAzimuth = 0f;
+    private static final float ALPHA = 0.25f;
+    private static final float MIN_DIFF_TO_UPDATE = 5.0f;
+
+    public interface HeadingListener {
+        void onHeadingChanged(float azimuth);
+    }
     public LocationHelper(Context context) {
         this.context = context;
         initFusedLocation();
+        initCompassSensor();
     }
 
     public void initFusedLocation() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
-    // Request one accurate fresh location update like Google Maps
+    private void initCompassSensor() {
+        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager != null) {
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        }
+    }
+
+    // ✅ One-time fresh accurate location
     @SuppressLint("MissingPermission")
     public void getAccurateLocation(OnSuccessListener<Location> onSuccessListener) {
         if (!checkLocationPermission()) {
@@ -51,7 +78,7 @@ public class LocationHelper {
                 .setMaxUpdates(1)
                 .build();
 
-        locationCallback = new LocationCallback() {
+        singleLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null || locationResult.getLastLocation() == null) {
@@ -60,28 +87,70 @@ public class LocationHelper {
                 }
                 Location location = locationResult.getLastLocation();
                 Log.d("FreshUserLocation", "Lat: " + location.getLatitude() + ", Lon: " + location.getLongitude());
+                accuracy = location.getAccuracy();
                 onSuccessListener.onSuccess(location);
 
-                // Stop updates after receiving one location
-                fusedLocationClient.removeLocationUpdates(locationCallback);
+                // stop after getting one location
+                fusedLocationClient.removeLocationUpdates(singleLocationCallback);
             }
         };
 
-        // Start location updates
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, context.getMainLooper());
+        fusedLocationClient.requestLocationUpdates(locationRequest, singleLocationCallback, context.getMainLooper());
     }
 
+    // ✅ Continuous location updates like Google Maps
+    @SuppressLint("MissingPermission")
+    public void startContinuousLocationUpdates(OnSuccessListener<Location> onLocationChanged) {
+        if (!checkLocationPermission()) {
+            Toast.makeText(context, "Location permission not granted.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 4000)
+                .setMinUpdateIntervalMillis(2000)
+                .setMinUpdateDistanceMeters(5f)
+                .build();
+
+        continuousLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) return;
+
+                Location location = locationResult.getLastLocation();
+                if (location != null) {
+                    Log.d("LiveLocation", "Lat: " + location.getLatitude() + ", Lon: " + location.getLongitude());
+                    accuracy = location.getAccuracy();
+                    onLocationChanged.onSuccess(location);
+                }
+            }
+        };
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, continuousLocationCallback, context.getMainLooper());
+    }
+
+    // ✅ Stop continuous updates (called in onPause/onDestroy)
+    public void stopLocationUpdates() {
+        if (fusedLocationClient != null) {
+            if (singleLocationCallback != null)
+                fusedLocationClient.removeLocationUpdates(singleLocationCallback);
+            if (continuousLocationCallback != null)
+                fusedLocationClient.removeLocationUpdates(continuousLocationCallback);
+        }
+    }
+
+    // Permission checker
     public boolean checkLocationPermission() {
         return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
+    // Request permission dialog
     public void requestLocationPermission(Fragment fragment, int requestCode) {
         ActivityCompat.requestPermissions(fragment.requireActivity(),
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, requestCode);
     }
 
-    // Optional: to get last known location if needed as a fallback
+    // Fallback: last known location (optional)
     @SuppressLint("MissingPermission")
     public void getLastKnownLocation(OnSuccessListener<Location> onSuccessListener) {
         if (!checkLocationPermission()) return;
@@ -91,7 +160,7 @@ public class LocationHelper {
                 .addOnFailureListener(e -> Toast.makeText(context, "Location error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    // Optional: to fetch old location synchronously (not recommended)
+    // Synchronous location fetch via LocationManager (not recommended)
     public GeoPoint getUserLocation() {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null) return null;
@@ -112,11 +181,21 @@ public class LocationHelper {
         }
     }
 
-    // Stop any ongoing location updates
-    public void stopLocationUpdates() {
-        if (fusedLocationClient != null && locationCallback != null) {
-            fusedLocationClient.removeLocationUpdates(locationCallback);
+    public void startCompass() {
+        if (sensorManager != null && accelerometer != null && magnetometer != null) {
+            sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_UI);
+            sensorManager.registerListener(sensorEventListener, magnetometer, SensorManager.SENSOR_DELAY_UI);
         }
+    }
+
+    public void stopCompass() {
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(sensorEventListener);
+        }
+    }
+
+    public void setHeadingListener(HeadingListener listener) {
+        this.headingListener = listener;
     }
 
     public void setAccuracy(float accuracy) {
@@ -130,5 +209,41 @@ public class LocationHelper {
     public FusedLocationProviderClient getFusedLocationClient() {
         return fusedLocationClient;
     }
+
+    private final SensorEventListener sensorEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+                gravity = event.values;
+            if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+                geomagnetic = event.values;
+
+            if (gravity != null && geomagnetic != null) {
+                float R[] = new float[9];
+                float I[] = new float[9];
+                if (SensorManager.getRotationMatrix(R, I, gravity, geomagnetic)) {
+                    float orientation[] = new float[3];
+                    SensorManager.getOrientation(R, orientation);
+                    float rawAzimuth = (float) Math.toDegrees(orientation[0]);
+                    if (rawAzimuth < 0) rawAzimuth += 360;
+
+                    // Apply low-pass filter
+                    float filteredAzimuth = currentAzimuth + ALPHA * (rawAzimuth - currentAzimuth);
+
+                    // Only notify listener if heading changes more than MIN_DIFF_TO_UPDATE
+                    if (Math.abs(filteredAzimuth - currentAzimuth) >= MIN_DIFF_TO_UPDATE) {
+                        currentAzimuth = filteredAzimuth;
+                        if (headingListener != null) {
+                            headingListener.onHeadingChanged(currentAzimuth);
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    };
+
 
 }
