@@ -68,9 +68,8 @@ A standout feature of ParkSmart is the ability to save private parking locations
 
 Got feedback, ideas, or collaboration in mind? Reach out to me!
 
- 📧 Email: `your_email@gmail.com`
- 💼 LinkedIn: [Your LinkedIn Profile](your_linkedin_url)
- 🌐 Portfolio / Website: `your_website_url` (optional)
+ 📧 Email: `lochana24309@gmail.com`
+ 💼 LinkedIn: www.linkedin.com/in/lochana-minuwansala-0a9781270
 
 ---
 
