@@ -148,7 +148,6 @@ public class ContributionsFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mViewModel = new ViewModelProvider(this).get(ContributionsViewModel.class);
-        // TODO: Use the ViewModel
     }
 
 }
