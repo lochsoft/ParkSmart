@@ -160,6 +160,7 @@ public class LocationOverlayManager {
         }
 
         navigateButton.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
             GeoPoint userLocation = locationHelper.getUserLocation();
             GeoPoint destination = new GeoPoint(location.getLatitude(), location.getLongitude());
             NavigationHelper.navigateToSelectedLocation(this.context, userLocation, destination);
@@ -183,6 +184,7 @@ public class LocationOverlayManager {
 
         saveButton.setOnClickListener(v -> {
             saveParkingLocation(location);
+            bottomSheetDialog.dismiss();
         });
 
         RecyclerView imageRecyclerView = bottomSheetView.findViewById(R.id.imageRecyclerView);
@@ -222,7 +224,6 @@ public class LocationOverlayManager {
 
             AppDatabase.getInstance(context).parkingDataDao().insert(data);
             Toast.makeText(context, "Location Saved", Toast.LENGTH_SHORT).show();
-
         } catch (Exception e) {
             Log.d("saveParkingLocation", "error " + e.getMessage());
         }

@@ -2,6 +2,7 @@ package com.lochana.parkingassistant;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -147,6 +148,10 @@ public class LocationHelper {
     // Request permission dialog
     public void requestLocationPermission(Fragment fragment, int requestCode) {
         ActivityCompat.requestPermissions(fragment.requireActivity(),
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, requestCode);
+    }
+    public void requestLocationPermission(Activity activity, int requestCode) {
+        ActivityCompat.requestPermissions(activity,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, requestCode);
     }
 

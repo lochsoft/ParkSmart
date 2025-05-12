@@ -16,16 +16,24 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.lochana.parkingassistant.databinding.ActivityMainBinding;
 import com.lochana.parkingassistant.ui.dashboard.DashboardFragment;
+import com.lochana.parkingassistant.ui.contributions.ContributionsFragment;
 import com.lochana.parkingassistant.ui.home.HomeFragment;
 import com.lochana.parkingassistant.ui.notifications.NotificationsFragment;
 
 import android.Manifest;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private Fragment notificationsFragment;
     private Fragment dashboardFragment;
     private Fragment activeFragment;
+    private Fragment contributionFragment;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,57 +51,46 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+//        FrameLayout navigation_host = findViewById(R.id.nav_host_fragment_activity_main);
+//        // Apply window insets for status bar padding
+//        ViewCompat.setOnApplyWindowInsetsListener(navigation_host, (view, insets) -> {
+//            int statusBarHeight = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
+//
+//            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+//            params.topMargin = statusBarHeight;
+//            view.setLayoutParams(params);
+//
+//            return insets;
+//        });
+
         // request notification_item.xml permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
-
-                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            } else {
+                checkAndShowWelcomeNotification();
             }
+        } else {
+            checkAndShowWelcomeNotification();
         }
-
-        // Check first launch
-        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        boolean firstLaunch = prefs.getBoolean("firstLaunch", true);
-
-        if (firstLaunch) {
-            // Show notification
-            showWelcomeNotification();
-
-            // Update preference so it doesn't show again
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("firstLaunch", false);
-            editor.apply();
-        }
-
-//        FirebaseMessaging.getInstance().getToken()
-//                .addOnCompleteListener(task -> {
-//                    if (!task.isSuccessful()) {
-//                        Log.w("FCM", "Fetching FCM registration token failed", task.getException());
-//                        return;
-//                    }
-//
-//                    // Get new FCM registration token
-//                    String token = task.getResult();
-//                    Log.d("FCM", "Token: " + token);
-//                });
 
         BottomNavigationView bottomNavigationView = binding.navView;
-
         // Initialize fragments
         homeFragment = new HomeFragment();
         notificationsFragment = new NotificationsFragment();
         dashboardFragment = new DashboardFragment();
+        contributionFragment = new ContributionsFragment();
         activeFragment = homeFragment;
 
         // Add fragments once and show the initial one
         FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(R.id.nav_host_fragment_activity_main, contributionFragment, "4").hide(contributionFragment).commit();
         fragmentManager.beginTransaction().add(R.id.nav_host_fragment_activity_main, dashboardFragment, "3").hide(dashboardFragment).commit();
         fragmentManager.beginTransaction().add(R.id.nav_host_fragment_activity_main, notificationsFragment, "2").hide(notificationsFragment).commit();
         fragmentManager.beginTransaction().add(R.id.nav_host_fragment_activity_main, homeFragment, "1").commit();
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-
             int id = item.getItemId();
             if (id == R.id.navigation_home) {
                 switchFragment(homeFragment);
@@ -101,9 +100,10 @@ public class MainActivity extends AppCompatActivity {
             }
             else if (id == R.id.navigation_dashboard) {
                 switchFragment(dashboardFragment);
-
             }
-
+            else if (id == R.id.navigation_contributions) {
+                switchFragment(contributionFragment);
+            }
             return true;
         });
 
@@ -123,6 +123,19 @@ public class MainActivity extends AppCompatActivity {
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
+        }
+    }
+
+    private void checkAndShowWelcomeNotification() {
+        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        boolean firstLaunch = prefs.getBoolean("firstLaunch1", true);
+
+        if (firstLaunch) {
+            showWelcomeNotification();
+
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("firstLaunch1", false);
+            editor.apply();
         }
     }
 
@@ -148,8 +161,10 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 101) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted
+                checkAndShowWelcomeNotification();
             } else {
                 // Show explanation or disable notifications
+                Toast.makeText(this, "Please unable Location permission from app settings!!", Toast.LENGTH_SHORT).show();
             }
         }
     }

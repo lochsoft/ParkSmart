@@ -1,6 +1,9 @@
 package com.lochana.parkingassistant.ui.home;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -36,13 +40,20 @@ import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.lochana.parkingassistant.AppDatabase;
 import com.lochana.parkingassistant.ExistingParkingBottomSheet;
+import com.lochana.parkingassistant.GeofenceBroadcastReceiver;
 import com.lochana.parkingassistant.InfoBanner;
 import com.lochana.parkingassistant.Location;
 import com.lochana.parkingassistant.LocationHelper;
@@ -86,10 +97,15 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
     private Polygon userAccuracyCircle;
     private int currentLayer;
     private boolean isFollowingUser = true;
+    private GeofencingClient geofencingClient;
+    private PendingIntent geofencePendingIntent;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
+
+        // geofencing setup
+        geofencingClient = LocationServices.getGeofencingClient(requireContext());
 
         mapView = root.findViewById(R.id.openStreetMap);
         searchView = root.findViewById(R.id.searchAutoComplete);
@@ -234,16 +250,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
             Log.d("NearestLocation", "Nearest Location: " + nearest.getName() + ", Lat: " + nearest.getLatitude() + ", Lon: " + nearest.getLongitude());
 
-            // Show confirmation dialog
-//            new MaterialAlertDialogBuilder(requireContext())
-//                    .setTitle("Navigate to Nearest Parking Spot?")
-//                    .setMessage("Nearest location is: " + nearest.getName() + "\nDo you want to show the route?")
-//                    .setPositiveButton("Yes", (dialog, which) -> {
-//                        // User clicked Yes
-//                        RouteDrawer.fetchRoute(userLocation, new GeoPoint(nearest.getLatitude(), nearest.getLongitude()), mapView);
-//                    })
-//                    .setNegativeButton("No", null)
-//                    .show();
             // show the navigate_to_bottomsheet dialog
             View nearest_location_bottomsheet = LayoutInflater.from(requireContext()).inflate(R.layout.navigat_to_bottomsheet, null);
             BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
@@ -310,6 +316,9 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                                 Location location = new Location(name, latitude, longitude, availability, rating, price, document.getId(), description, type);
                                 // add location names to list
                                 locations.add(location);
+
+                                // 👉 Add Geofence for this location
+                                addGeofence(location);
                             }
 
                             //initializeLocations(locations);
@@ -341,7 +350,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                                     Location location = new Location(name, latitude, longitude, availability, rating, price, null, description, type);
                                     locations.add(location);
 
-
+                                    // 👉 Add Geofence for this location
+                                    addGeofence(location);
                                 }
                             } catch (Exception e) {
                                 Log.d("fetch locations local", "error " + e.getMessage());
@@ -365,6 +375,76 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Error fetching locations: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void addGeofence(Location location) {
+        try {
+            if (!hasLocationPermissions()) {
+                requestPermissions(new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                }, 1001);
+                Log.d("Geofence", "Permission not granted");
+                return;
+            }
+
+            if (location.getLatitude() == 0.0 || location.getLongitude() == 0.0) return;
+
+            Geofence geofence = new Geofence.Builder()
+                    .setRequestId(location.getName())
+                    .setCircularRegion(location.getLatitude(), location.getLongitude(), 10)
+                    .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                    .build();
+
+            GeofencingRequest geofencingRequest = new GeofencingRequest.Builder()
+                    .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                    .addGeofence(geofence)
+                    .build();
+
+            Intent intent = new Intent(requireContext(), GeofenceBroadcastReceiver.class);
+            PendingIntent pendingIntent =PendingIntent.getBroadcast(
+                    requireContext(),
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            int apiAvailable = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(requireContext());
+            Log.d("Geofence", "Google Play Services status: " + apiAvailable);
+
+//            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+//                    ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(requireActivity(),
+//                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+//                        1001);
+//                return;
+//            }
+
+            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.d("Geofence", "Permission not granted");
+                return;
+            }
+            else{
+                Log.d("Geofence", "Permission granted");
+            }
+
+            if (pendingIntent == null){
+                Log.d("Geofence", "pendingIntent is null");
+            }
+            assert pendingIntent != null;
+
+            geofencingClient.addGeofences(geofencingRequest, pendingIntent)
+                    .addOnSuccessListener(aVoid -> Log.d("Geofence", "Geofence added for: " + location.getName()))
+                    .addOnFailureListener(e -> Log.d("Geofence", "Failed to add geofence", e));
+        } catch (Exception e) {
+            Log.d("addGeoFence", "error : " + e.getMessage());
+        }
+    }
+
+    private boolean hasLocationPermissions() {
+        return ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     // Initialize the adapter and set it to the AutoCompleteTextView

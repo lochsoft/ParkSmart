@@ -9,4 +9,10 @@
         <item name="android:background">@drawable/location_details_banner</item>
         <item name="android:layout_height">match_parent</item>
     </style>
+
+    <style name="CircleImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
 </resources>

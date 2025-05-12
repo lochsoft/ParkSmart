@@ -64,11 +64,11 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.add_new_parking_bottom_sheet, container, false);
-        editTextParkingName = view.findViewById(R.id.editTextParkingName);
+        editTextParkingName = view.findViewById(R.id.userNameTxt);
         buttonSave = view.findViewById(R.id.buttonSave);
         buttonCancel = view.findViewById(R.id.buttonCancel);
         //editTextAvailability = view.findViewById(R.id.editTextParkingName2);
-        price = view.findViewById(R.id.editTextParkingName3);
+        price = view.findViewById(R.id.passwordTxt);
         ratingBar = view.findViewById(R.id.ratingBar);
         description = view.findViewById(R.id.parkingDescription);
         String documentId = existingPoint != null ? existingPoint.getDocumentId() : null;

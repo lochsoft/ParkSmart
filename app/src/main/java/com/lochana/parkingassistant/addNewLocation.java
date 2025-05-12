@@ -5,6 +5,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,10 +15,12 @@ public class addNewLocation {
 
     private FirebaseFirestore db;
     private AppDatabase localDb;
+    private FirebaseAuth mAuth;
 
     public addNewLocation(Context context) {
         db = FirebaseFirestore.getInstance();
         localDb = AppDatabase.getInstance(context);
+        mAuth = FirebaseAuth.getInstance();
     }
 
     public void addNewLocation(String name, double latitude, double longitude, String availability, double price, Integer rating, String description, @Nullable String documentId, boolean type) {
@@ -57,6 +61,7 @@ public class addNewLocation {
                 location.put("price", price);
                 location.put("rating", rating);
                 location.put("description", description);
+                location.put("user", mAuth.getCurrentUser().getUid());
 
                 if (documentId == null) {
                     // Add a new document with a generated ID
@@ -65,6 +70,10 @@ public class addNewLocation {
                             .addOnSuccessListener(documentReference -> {
                                 Log.d("FirebaseHelper", "DocumentSnapshot added with ID: " + documentReference.getId());
                                 // Optionally handle successful addition (e.g., show a toast)
+                                // add points to user
+                                db.collection("users")
+                                        .document(mAuth.getCurrentUser().getUid())
+                                        .update("points", FieldValue.increment(10));
                             })
                             .addOnFailureListener(e -> {
                                 Log.w("FirebaseHelper", "Error adding document", e);
@@ -77,6 +86,10 @@ public class addNewLocation {
                             .set(location)
                             .addOnSuccessListener(aVoid -> {
                                 Log.d("FirebaseHelper", "Document updated successfully");
+                                // add points to user
+                                db.collection("users")
+                                        .document(mAuth.getCurrentUser().getUid())
+                                        .update("points", FieldValue.increment(5));
                             })
                             .addOnFailureListener(e -> {
                                 Log.w("FirebaseHelper", "Error updating document", e);

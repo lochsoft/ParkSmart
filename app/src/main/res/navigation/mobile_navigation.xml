@@ -22,4 +22,9 @@
         android:name="com.lochana.parkingassistant.ui.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
+    <fragment
+        android:id="@+id/contributionsFragment"
+        android:name="com.lochana.parkingassistant.ui.contributions.ContributionsFragment"
+        android:label="fragment_contributions"
+        tools:layout="@layout/fragment_contributions" />
 </navigation>
