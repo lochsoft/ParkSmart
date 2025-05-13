@@ -64,7 +64,15 @@ public class LoginActivity extends AppCompatActivity {
             String email = etEmail.getText().toString();
             String password = etPassword.getText().toString();
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
+                if (email.isEmpty()){
+                    etEmail.setError("Email is required");
+                    etEmail.requestFocus();
+                }
+                if (password.isEmpty()){
+                    etPassword.setError("Password is required");
+                    etPassword.requestFocus();
+                }
+                //Toast.makeText(this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
             }
             else {
                 progressBar.setVisibility(View.VISIBLE);
@@ -127,16 +135,19 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(this, "Welcome back " + user.getEmail(), Toast.LENGTH_SHORT).show();
-                        // Redirect to MainActivity
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
+                        if (user != null && user.isEmailVerified()) {
+                            Toast.makeText(this, "Welcome back " + user.getEmail(), Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(this, "Please verify your email before logging in.", Toast.LENGTH_LONG).show();
+                            mAuth.signOut(); // sign out unverified user
+                        }
                     } else {
                         Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                     progressBar.setVisibility(View.GONE);
                 });
     }
-
 }

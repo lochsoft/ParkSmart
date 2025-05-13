@@ -64,13 +64,13 @@
                 android:layout_marginTop="8dp"
                 android:layout_weight="1">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rankRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="10dp"
-                android:background="@drawable/top_layout"
-                android:padding="10dp" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rankRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/radio_btn_bg"
+                    android:padding="10dp" />
             </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
             <com.google.android.material.chip.Chip

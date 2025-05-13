@@ -2,6 +2,7 @@ package com.lochana.parkingassistant.ui.contributions;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -20,6 +21,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.material.chip.Chip;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -62,8 +64,18 @@ public class ContributionsFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
 
         logoutBtn.setOnClickListener(v -> {
-            logout();
+            new MaterialAlertDialogBuilder(getContext())
+                    .setTitle("Logout")
+                    .setMessage("Are you sure you want to logout?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        logout();
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> {
+                        dialog.dismiss();
+                    })
+                    .show();
         });
+
 
         RecyclerView recyclerView = view.findViewById(R.id.rankRecyclerView);
         userList = new ArrayList<>();
@@ -116,20 +128,36 @@ public class ContributionsFragment extends Fragment {
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         userList.clear();
+                        long rank = 1;
+
                         for (DocumentSnapshot doc : queryDocumentSnapshots) {
                             User user = doc.toObject(User.class);
-                            userList.add(user);
+                            if (user != null) {
+                                user.setRank(rank);  // Set local rank for display
+                                userList.add(user);
+
+                                // Update rank field in Firestore for this user
+                                db.collection("users").document(doc.getId())
+                                        .update("rank", rank)
+                                        .addOnFailureListener(e -> Log.e("Firestore", "Failed to update rank", e));
+
+                                rank++; // Increment rank for next user
+                            }
                         }
                         adapter.notifyDataSetChanged();
+                        swipeLayout.setRefreshing(false);
                     })
                     .addOnFailureListener(e -> {
                         Log.e("Firestore", "Error fetching users", e);
+                        swipeLayout.setRefreshing(false);
                     });
-            swipeLayout.setRefreshing(false);
+
         } catch (Exception e) {
-            Log.d("Contributions", "Error fetching users");
+            Log.d("Contributions", "Error fetching users", e);
+            swipeLayout.setRefreshing(false);
         }
     }
+
     private void logout() {
         try {
             mAuth.signOut();
@@ -142,7 +170,6 @@ public class ContributionsFragment extends Fragment {
             throw new RuntimeException(e);
         }
     }
-
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {

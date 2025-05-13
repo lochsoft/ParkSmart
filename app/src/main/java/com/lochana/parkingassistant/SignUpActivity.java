@@ -79,30 +79,40 @@ public class SignUpActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        String userId = user.getUid();
+                        if (user != null) {
+                            // Send email verification
+                            user.sendEmailVerification()
+                                    .addOnCompleteListener(verifyTask -> {
+                                        if (verifyTask.isSuccessful()) {
+                                            String userId = user.getUid();
 
-                        // Create User object
-                        //User newUser = new User(etNickname.getText().toString(), user.getEmail(), 0, 0);
+                                            // Create User object
+                                            Map<String, Object> newUser = new HashMap<>();
+                                            newUser.put("nickname", etNickname.getText().toString());
+                                            newUser.put("email", user.getEmail());
+                                            newUser.put("points", 0);
+                                            newUser.put("rank", 0);
 
-                        Map<String, Object> newUser = new HashMap<>();
-                        newUser.put("nickname", etNickname.getText().toString());
-                        newUser.put("email", user.getEmail());
-                        newUser.put("points", 0);
-                        newUser.put("rank", 0);
+                                            db.collection("users").document(userId).set(newUser)
+                                                    .addOnSuccessListener(aVoid -> Log.d("Signup", "User profile created successfully"))
+                                                    .addOnFailureListener(e -> Log.w("Signup", "Error adding user", e));
 
-                        db.collection("users").document(userId).set(newUser)
-                                .addOnSuccessListener(aVoid -> Log.d("Signup", "User profile created successfully"))
-                                .addOnFailureListener(e -> Log.w("Signup", "Error adding user", e));
+                                            Toast.makeText(this, "Account created. Please check your email to verify your account before logging in.", Toast.LENGTH_LONG).show();
 
-                        Toast.makeText(this, "Account created for " + user.getEmail(), Toast.LENGTH_SHORT).show();
-                        // redirect to login activity here
-                        Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
-                        startActivity(intent);
-                        finish();
+                                            // Redirect to login activity
+                                            Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            Toast.makeText(this, "Failed to send verification email: " + verifyTask.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                        }
                     } else {
                         Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                     progressBar.setVisibility(View.GONE);
                 });
     }
+
 }

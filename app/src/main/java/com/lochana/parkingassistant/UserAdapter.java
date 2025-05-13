@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 //import com.google.firebase.firestore.auth.User;
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.util.List;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
@@ -20,12 +22,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     }
 
     public static class UserViewHolder extends RecyclerView.ViewHolder {
-        TextView nicknameTextView, pointsTextView;
+        TextView nicknameTextView, pointsTextView,rankTextView;
 
         public UserViewHolder(View itemView) {
             super(itemView);
             nicknameTextView = itemView.findViewById(R.id.nicknameTextView);
             pointsTextView = itemView.findViewById(R.id.pointsTextView);
+            rankTextView = itemView.findViewById(R.id.rankTextView);
         }
     }
 
@@ -40,8 +43,18 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
-        holder.nicknameTextView.setText(user.getNickname());
-        holder.pointsTextView.setText(String.valueOf(user.getPoints()));
+
+        String currentUserEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        // Check if this user is the current user
+        if (user.getEmail() != null && user.getEmail().equals(currentUserEmail)) {
+            holder.nicknameTextView.setText("You");
+        } else {
+            holder.nicknameTextView.setText(user.getNickname());
+        }
+
+        //holder.nicknameTextView.setText(user.getNickname());
+        holder.pointsTextView.setText("Points : " + String.valueOf(user.getPoints()));
+        holder.rankTextView.setText(String.valueOf(user.getRank()));
     }
 
     @Override

@@ -10,8 +10,8 @@
     <ProgressBar
         android:id="@+id/progressBar3"
         style="?android:attr/progressBarStyle"
-        android:layout_width="80dp"
-        android:layout_height="84dp"
+        android:layout_width="74dp"
+        android:layout_height="69dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
