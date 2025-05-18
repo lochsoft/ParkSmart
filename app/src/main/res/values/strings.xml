@@ -15,4 +15,5 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="default_web_client_id">903990753712-2na5379o9vping2po4jr8kbjmh71rdva.apps.googleusercontent.com</string>
+    <string name="you">"You"</string>
 </resources>

@@ -25,21 +25,39 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/circleImageView"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="30dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/pro_pic"
-            app:shapeAppearanceOverlay="@style/CircleImageView" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/circleImageView"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center|top"
+                android:layout_marginTop="30dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/pro_pic"
+                app:shapeAppearanceOverlay="@style/CircleImageView" />
+
+            <ImageButton
+                android:id="@+id/imageButton"
+                android:layout_width="31dp"
+                android:layout_height="32dp"
+                android:layout_gravity="bottom|end"
+                android:layout_marginStart="20dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/edit"
+                android:tint="#807B7B" />
+
+        </FrameLayout>
 
         <TextView
             android:id="@+id/userName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:elevation="3dp"
             android:text="User Name"
             android:textAlignment="center"
             android:textSize="18sp"
@@ -49,7 +67,8 @@
             android:id="@+id/rankTxt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Rank : 17"
+            android:elevation="3dp"
+            android:text="Rank : 00"
             android:textAlignment="center" />
 
         <FrameLayout

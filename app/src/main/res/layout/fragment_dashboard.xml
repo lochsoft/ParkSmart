@@ -34,11 +34,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
                 android:layout_weight="1"
                 android:background="@drawable/searchview_bg"
-                android:orientation="vertical"
-                android:paddingBottom="10dp">
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/textView7"
@@ -64,7 +62,9 @@
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/saved_parking_recyclerview"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/radio_btn_bg"
+                        android:padding="7dp" />
 
                 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
             </LinearLayout>
@@ -81,7 +81,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
-                    android:layout_marginTop="10dp"
                     android:layout_marginEnd="5dp"
                     android:background="@drawable/top_layout"
                     android:gravity="center"
@@ -100,7 +99,9 @@
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/private_parking_recyclerview"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/radio_btn_bg"
+                        android:padding="7dp" />
 
                 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
             </LinearLayout>

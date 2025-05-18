@@ -1,9 +1,12 @@
 package com.lochana.parkingassistant;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -19,7 +22,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -33,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
     ProgressBar progressBar;
     private static final int RC_SIGN_IN = 9001;
     private GoogleSignInClient mGoogleSignInClient;
+    CheckBox rememberMeCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         progressBar = findViewById(R.id.progressBar);
+        rememberMeCheckBox = findViewById(R.id.rememberMeCheckBox);
 
         Button btnSignUp = findViewById(R.id.signUpbtn);
         Button btnSignIn = findViewById(R.id.loginBtn);
@@ -72,7 +76,6 @@ public class LoginActivity extends AppCompatActivity {
                     etPassword.setError("Password is required");
                     etPassword.requestFocus();
                 }
-                //Toast.makeText(this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
             }
             else {
                 progressBar.setVisibility(View.VISIBLE);
@@ -80,15 +83,22 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        // google sign up
-        // Configure Google Sign In
+        // google sign in
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))  // get this from google-services.json
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         googleLoginbtn.setOnClickListener(v -> signInWithGoogle());
+
+        // check remember me status
+        SharedPreferences preferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+        boolean rememberMe = preferences.getBoolean("rememberMe", false);
+        if (rememberMe) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }
     }
 
     private void signInWithGoogle() {
@@ -112,42 +122,56 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(this, "Google Sign In Success: " + user.getEmail(), Toast.LENGTH_SHORT).show();
-
-                        // Go to MainActivity
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-
-                    } else {
-                        Toast.makeText(this, "Firebase Auth failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void signInUser(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null && user.isEmailVerified()) {
-                            Toast.makeText(this, "Welcome back " + user.getEmail(), Toast.LENGTH_SHORT).show();
+        try {
+            AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+            mAuth.signInWithCredential(credential)
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            saveRememberMeState();
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(this, "Google Sign In Success: " + user.getEmail(), Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             startActivity(intent);
                             finish();
                         } else {
-                            Toast.makeText(this, "Please verify your email before logging in.", Toast.LENGTH_LONG).show();
-                            mAuth.signOut(); // sign out unverified user
+                            Toast.makeText(this, "Firebase Auth failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
-                    } else {
-                        Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                    progressBar.setVisibility(View.GONE);
-                });
+                    });
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Error signing in with Google", e);
+        }
+    }
+
+    private void signInUser(String email, String password) {
+        try {
+            mAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null && user.isEmailVerified()) {
+                                saveRememberMeState();
+                                Toast.makeText(this, "Welcome back " + user.getEmail(), Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                Toast.makeText(this, "Please verify your email before logging in.", Toast.LENGTH_LONG).show();
+                                mAuth.signOut();
+                            }
+                        } else {
+                            Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                        progressBar.setVisibility(View.GONE);
+                    });
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Error signing in user", e);
+        }
+    }
+
+    private void saveRememberMeState() {
+        SharedPreferences preferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("rememberMe", rememberMeCheckBox.isChecked());
+        editor.apply();
     }
 }

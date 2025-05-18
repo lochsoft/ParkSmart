@@ -3,6 +3,7 @@ package com.lochana.parkingassistant;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -24,6 +25,8 @@ import androidx.fragment.app.FragmentManager;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.lochana.parkingassistant.databinding.ActivityMainBinding;
 import com.lochana.parkingassistant.ui.dashboard.DashboardFragment;
 import com.lochana.parkingassistant.ui.contributions.ContributionsFragment;
@@ -50,18 +53,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-//        FrameLayout navigation_host = findViewById(R.id.nav_host_fragment_activity_main);
-//        // Apply window insets for status bar padding
-//        ViewCompat.setOnApplyWindowInsetsListener(navigation_host, (view, insets) -> {
-//            int statusBarHeight = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
-//
-//            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-//            params.topMargin = statusBarHeight;
-//            view.setLayoutParams(params);
-//
-//            return insets;
-//        });
 
         // request notification_item.xml permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

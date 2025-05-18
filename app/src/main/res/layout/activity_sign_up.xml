@@ -7,17 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".SignUpActivity">
 
-    <ProgressBar
-        android:id="@+id/progressBar3"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="74dp"
-        android:layout_height="69dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
@@ -52,45 +41,67 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/userNameTxt2"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:autoLink="email"
-                android:hint="Email"
-                android:inputType="text"
-                android:textColor="@color/material_dynamic_neutral30"
-                android:textColorHint="@color/material_dynamic_neutral40"
-                android:textColorLink="@color/purple_500" />
+                app:endIconMode="clear_text">
 
-            <EditText
-                android:id="@+id/userNameTxt3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_weight="1"
-                android:autoLink="email"
-                android:hint="Nick Name"
-                android:inputType="text"
-                android:textColor="@color/material_dynamic_neutral30"
-                android:textColorHint="@color/material_dynamic_neutral40"
-                android:textColorLink="@color/purple_500" />
+                <EditText
+                    android:id="@+id/userNameTxt2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="1"
+                    android:autoLink="email"
+                    android:hint="Email"
+                    android:inputType="text"
+                    android:textColor="@color/material_dynamic_neutral30"
+                    android:textColorHint="@color/material_dynamic_neutral40"
+                    android:textColorLink="@color/purple_500" />
 
-            <EditText
-                android:id="@+id/passwordTxt2"
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="5dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:hint="Passward"
-                android:inputType="text"
-                android:password="true"
-                android:textColor="@color/material_dynamic_neutral30"
-                android:textColorHint="@color/material_dynamic_neutral40"
-                android:textColorLink="@color/purple_500" />
+                app:endIconMode="clear_text">
+
+                <EditText
+                    android:id="@+id/userNameTxt3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="1"
+                    android:autoLink="email"
+                    android:hint="Nick Name"
+                    android:inputType="text"
+                    android:textColor="@color/material_dynamic_neutral30"
+                    android:textColorHint="@color/material_dynamic_neutral40"
+                    android:textColorLink="@color/purple_500" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                app:endIconMode="password_toggle">
+
+                <EditText
+                    android:id="@+id/passwordTxt2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="1"
+                    android:hint="Passward"
+                    android:inputType="text"
+                    android:password="true"
+                    android:textColor="@color/material_dynamic_neutral30"
+                    android:textColorHint="@color/material_dynamic_neutral40"
+                    android:textColorLink="@color/purple_500" />
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 
@@ -130,4 +141,16 @@
             app:srcCompat="@drawable/common_google_signin_btn_icon_light" />
 
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar3"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="74dp"
+        android:layout_height="69dp"
+        android:indeterminateTint="#673AB7"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

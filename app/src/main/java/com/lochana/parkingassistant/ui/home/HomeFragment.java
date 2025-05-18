@@ -3,11 +3,13 @@ package com.lochana.parkingassistant.ui.home;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -22,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -186,8 +189,12 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
         // rotate to user heading direction
         locationHelper.setHeadingListener(azimuth -> {
-            mapView.setMapOrientation(azimuth);
+            mapView.setMapOrientation(-azimuth);
             mapView.invalidate();
+            if (userMarker != null) {
+                userMarker.setRotation(azimuth + mapView.getMapOrientation());
+                mapView.invalidate();
+            }
         });
 
         return root;
@@ -542,6 +549,19 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                         event.getAction() == MotionEvent.ACTION_MOVE) {
                     stopAutoRotation();
                 }
+
+//                    // Stop rotating the map
+//                    //mapView.setMapOrientation(0);
+//                    mapView.invalidate();
+//
+//                    // Continue rotating the marker to match azimuth (relative to North)
+//                    locationHelper.setHeadingListener(azimuth -> {
+//                        if (userMarker != null) {
+//                            userMarker.setRotation(-azimuth);
+//                            mapView.invalidate();
+//                        }
+//                    });
+
                 return false; // Let MapView also handle the event normally
             }
         });
@@ -626,7 +646,9 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                         mapView.getController().animateTo(userPoint);
                         mapView.getController().setZoom(20.0);
                     } else {
-                        Toast.makeText(requireContext(), "Location not available", Toast.LENGTH_SHORT).show();
+                        // set a dialog to remind user to enable location
+                        showLocationEnableDialog();
+                        //Toast.makeText(requireContext(), "Location not available", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -634,11 +656,29 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                 });
     }
 
+    private void showLocationEnableDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Enable Location")
+                .setMessage("This app needs location services to work properly. Please turn on location.")
+                .setPositiveButton("Open Settings", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Open location settings
+                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .setCancelable(false)
+                .show();
+    }
+
     private void updateUserMarkerPosition(GeoPoint point) {
         try {
             if (userMarker == null) {
                 userMarker = new Marker(mapView);
-                userMarker.setIcon(getResources().getDrawable(R.drawable.userlocation));
+//                userMarker.setIcon(getResources().getDrawable(R.drawable.userlocation));
+                userMarker.setIcon(getResources().getDrawable(R.drawable.north_arrow));
                 userMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
                 double accuracy = locationHelper.getAccuracy();
                 userMarker.setTitle("You're Here on accuracy to " + String.format("%.2f", accuracy) + "m!");
