@@ -1,7 +1,7 @@
 package com.lochana.parkingassistant;
 public class Location {
     private final String description;
-    private String name;
+    private String name,user, nickName;
     private double latitude;
     private double longitude;
     private String availability;
@@ -10,7 +10,7 @@ public class Location {
     private String documentid;
     private boolean type;
 
-    public Location(String name, double latitude, double longitude, String availability, Integer rating, double price, String documentid, String description, boolean type) {
+    public Location(String name, double latitude, double longitude, String availability, Integer rating, double price, String documentid, String description, boolean type, String user, String nickName) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -20,6 +20,8 @@ public class Location {
         this.documentid = documentid;
         this.description = description;
         this.type = type;
+        this.user = user;
+        this.nickName = nickName;
     }
 
     public String getName() {
@@ -56,5 +58,12 @@ public class Location {
 
     public boolean getType() {
         return type;
+    }
+
+    public String getUser() {
+        return user;
+    }
+    public String getNickName() {
+        return nickName;
     }
 }

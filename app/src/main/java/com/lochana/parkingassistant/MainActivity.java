@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // welcome notification
     private void checkAndShowWelcomeNotification() {
         SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         boolean firstLaunch = prefs.getBoolean("firstLaunch1", true);

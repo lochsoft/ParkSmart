@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -142,7 +143,13 @@ public class NewParkingDetailsBottomSheet extends BottomSheetDialogFragment {
                         rating = (int) ratingValue;
                     }
 
-                    if (!name.isEmpty() && !availability.isEmpty() && price != null && rating != null) {
+                    if (!name.isEmpty() && !availability.isEmpty() && rating != null) {
+                        if (price == null){
+                            price = 0.0;
+                        }
+                        if (descriptionText.isEmpty()){
+                            descriptionText = "No description";
+                        }
                         // All inputs are valid, proceed
                         Log.d("updateLocationTest", name + " " + selectedPoint.getLatitude() + " " + selectedPoint.getLongitude() + " " + availability + " " + price + " " + rating + " " + descriptionText + " " + documentId);
                         addNewLocation.addNewLocation(name, selectedPoint.getLatitude(), selectedPoint.getLongitude(), availability, price, rating, descriptionText, documentId, isPrivate);

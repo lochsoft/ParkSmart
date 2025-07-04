@@ -136,6 +136,23 @@
             android:textColorHint="@color/material_dynamic_neutral50"
             android:textSize="16sp" />
 
+        <View
+            android:id="@+id/view11"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:background="#5B5B5B" />
+
+        <TextView
+            android:id="@+id/addedBy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:inputType="text"
+            android:text="Added By : "
+            android:textColor="@color/material_dynamic_neutral40"
+            android:textSize="16sp" />
+
     </LinearLayout>
 
     <LinearLayout

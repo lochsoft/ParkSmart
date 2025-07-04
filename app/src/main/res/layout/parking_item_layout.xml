@@ -17,13 +17,19 @@
             android:id="@+id/private_parking_indicator2"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="0.1"
             android:drawableStart="@android:drawable/ic_lock_idle_lock"
             android:drawableTint="@color/black"
             android:gravity="start"
             android:textColor="@color/material_dynamic_neutral40"
             android:textSize="16sp"
             android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/availabilitySignImgView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:srcCompat="@drawable/low_space" />
 
         <TextView
             android:id="@+id/parkingName"

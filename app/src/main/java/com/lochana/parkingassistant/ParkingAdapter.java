@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -17,6 +18,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.osmdroid.util.GeoPoint;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingViewHolder> {
 
@@ -45,9 +47,22 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
             holder.ratingBar.setRating((float) data.getRating());
             holder.removeBtn.setVisibility(View.VISIBLE);
 
+
+
             holder.navBtn.setOnClickListener(v -> {
                 NavigationHelper.navigateToSelectedLocation(context, null, new GeoPoint(data.getLatitude(), data.getLongitude()));
             });
+
+            holder.availabilityView.setVisibility(View.VISIBLE);
+            if (Objects.equals(data.getAvailability(), "Plenty of Space")) {
+                holder.availabilityView.setImageResource(R.drawable.plenty_of_space);
+            } else if (Objects.equals(data.getAvailability(), "Limited Space")) {
+                holder.availabilityView.setImageResource(R.drawable.low_space);
+            } else if (Objects.equals(data.getAvailability(), "No Space")) {
+                holder.availabilityView.setImageResource(R.drawable.no_spaces_available);
+            } else if (Objects.equals(data.getAvailability(), "Unknown Availability")) {
+                holder.availabilityView.setImageResource(R.drawable.unknown_availability);
+            }
 
             holder.removeBtn.setOnClickListener(v -> {
                 new MaterialAlertDialogBuilder(context)
@@ -77,7 +92,7 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
         TextView titleText, priceText, privetIndicator;
         RatingBar ratingBar;
         Button navBtn, removeBtn;
-
+        ImageView availabilityView;
         public ParkingViewHolder(@NonNull View itemView) {
             super(itemView);
             titleText = itemView.findViewById(R.id.parkingName);
@@ -85,6 +100,7 @@ public class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingV
             ratingBar = itemView.findViewById(R.id.parkingRating);
             navBtn = itemView.findViewById(R.id.navigateBtn);
             removeBtn = itemView.findViewById(R.id.remove_btn);
+            availabilityView = itemView.findViewById(R.id.availabilitySignImgView);
         }
     }
 }

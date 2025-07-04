@@ -16,4 +16,9 @@
     <string name="login_failed">"Login failed"</string>
     <string name="default_web_client_id">903990753712-2na5379o9vping2po4jr8kbjmh71rdva.apps.googleusercontent.com</string>
     <string name="you">"You"</string>
+    <string name="plenty_of_space">"Plenty of Space"</string>
+    <string name="limited_space">"Limited Space"</string>
+    <string name="no_space">"No Space"</string>
+    <string name="unknown_availability">"Unknown Availability"</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

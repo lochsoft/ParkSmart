@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +20,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 import java.util.List;
+import java.util.Objects;
 
 public class AllParkings extends RecyclerView.Adapter<AllParkings.ViewHolder> {
 
@@ -40,6 +42,7 @@ public class AllParkings extends RecyclerView.Adapter<AllParkings.ViewHolder> {
         RatingBar rating;
         Button navigateBtn, locateBtn;
         TextView privateParkingIndicator;
+        ImageView availabilityView;
 
         public ViewHolder(View view) {
             super(view);
@@ -49,6 +52,7 @@ public class AllParkings extends RecyclerView.Adapter<AllParkings.ViewHolder> {
             navigateBtn = view.findViewById(R.id.navigateBtn);
             privateParkingIndicator = view.findViewById(R.id.private_parking_indicator2);
             locateBtn = view.findViewById(R.id.parkingLocateBtn);
+            availabilityView = view.findViewById(R.id.availabilitySignImgView);
         }
     }
 
@@ -90,6 +94,18 @@ public class AllParkings extends RecyclerView.Adapter<AllParkings.ViewHolder> {
                     Log.d("AllParkings", "Error navigating to location: " + e.getMessage());
                 }
             });
+
+            holder.availabilityView.setVisibility(View.VISIBLE);
+            if (Objects.equals(parking.getAvailability(), "Plenty of Space")) {
+                holder.availabilityView.setImageResource(R.drawable.plenty_of_space);
+            } else if (Objects.equals(parking.getAvailability(), "Limited Space")) {
+                holder.availabilityView.setImageResource(R.drawable.low_space);
+            } else if (Objects.equals(parking.getAvailability(), "No Space")) {
+                holder.availabilityView.setImageResource(R.drawable.no_spaces_available);
+            } else if (Objects.equals(parking.getAvailability(), "Unknown Availability")) {
+                holder.availabilityView.setImageResource(R.drawable.unknown_availability);
+            }
+
         } catch (Exception e) {
             Toast.makeText(context, "Error binding view holder: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             Log.d("AllParkings", "Error binding view holder:" + e.getMessage());

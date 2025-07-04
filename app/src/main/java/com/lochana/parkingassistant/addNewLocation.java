@@ -62,6 +62,7 @@ public class addNewLocation {
                 location.put("rating", rating);
                 location.put("description", description);
                 location.put("user", mAuth.getCurrentUser().getUid());
+                location.put("userName", mAuth.getCurrentUser().getDisplayName());
 
                 if (documentId == null) {
                     // Add a new document with a generated ID
@@ -79,7 +80,7 @@ public class addNewLocation {
                                 Log.w("FirebaseHelper", "Error adding document", e);
                                 // Optionally handle failure (e.g., show an error message)
                             });
-                } else {
+                } else { // updating a location
                     Log.d("FirebaseHelper", "Updating document with ID: " + documentId);
                     db.collection("locations")
                             .document(documentId)

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="15dp"
+    android:background="@drawable/searchview_bg"
+    android:orientation="vertical"
+    android:padding="20dp"> <!-- Custom background for rounded corners -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_horizontal"
+        android:text="About ParkSmart"
+        android:textColor="#333333"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="Welcome to the University Parking App! Our mission is to simplify parking for students, faculty, and visitors by providing real-time parking availability and navigation.\n\nThis app thrives on crowdsourced data, meaning you and your peers help keep the parking information accurate and up-to-date. Your contributions make a real difference in reducing parking stress on campus.\n\nWe'd love to hear your thoughts, suggestions, or any issues you've encountered. Your feedback helps us improve!"
+        android:textColor="#555555"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/textView16"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_horizontal"
+        android:text="We value your feedback!"
+        android:textColor="#333333"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/edit_text_feedback"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/radio_btn_bg"
+        android:gravity="top"
+        android:hint="Tell us what you think..."
+        android:inputType="textMultiLine"
+        android:padding="12dp"
+        android:scrollbars="vertical"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/button_submit_feedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:backgroundTint="#4CAF50"
+        android:elevation="4dp"
+        android:paddingVertical="12dp"
+        android:text="Send Feedback"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:translationZ="4dp"
+        app:cornerRadius="24dp" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar_feedback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/text_view_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textSize="14sp"
+        android:textStyle="italic"
+        android:visibility="gone" />
+
+</LinearLayout>

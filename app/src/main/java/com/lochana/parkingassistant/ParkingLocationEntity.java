@@ -17,6 +17,7 @@ public class ParkingLocationEntity {
     public Integer rating;
     public String description;
     public boolean type;
+    public String user;
 
     public ParkingLocationEntity(String name, double latitude, double longitude,
                        String availability, double price, Integer rating, String description) {

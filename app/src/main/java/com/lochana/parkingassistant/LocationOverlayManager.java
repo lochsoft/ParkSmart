@@ -42,6 +42,7 @@ public class LocationOverlayManager {
     private Marker newParkingMarker;
     private ParkingLocationHelper parkingLocationHelper;
     private ExistingParkingData selectedPoint;
+    TextView addedBy;
 
     public LocationOverlayManager(Context context, MapView mapView, LocationHelper locationHelper, GeoPoint selectedDestination, com.lochana.parkingassistant.addNewLocation addNewLocation, HomeFragment homeFragment, ParkingLocationHelper parkingLocationHelper) {
         this.context = context;
@@ -142,6 +143,7 @@ public class LocationOverlayManager {
         TextView description = bottomSheetView.findViewById(R.id.textView3);
         Button saveButton = bottomSheetView.findViewById(R.id.button2);
         TextView private_indicator = bottomSheetView.findViewById(R.id.private_parking_indicator);
+        addedBy = bottomSheetView.findViewById(R.id.addedBy);
 
         // setting data to existing data class
         selectedPoint = new ExistingParkingData(location.getName(), location.getLatitude(), location.getLongitude(), location.getAvailability(), location.getPrice(), location.getRating(), location.getDescription(), location.getDocumentid(), location.getType());
@@ -152,6 +154,11 @@ public class LocationOverlayManager {
         priceView.setText(location.getPrice());
         ratingBar.setRating(location.getRating());
         description.setText(location.getDescription());
+        String userTxt = "Added By : " + location.getNickName();
+        if (location.getNickName() == null){
+            userTxt = "Added By : Anonymous User";
+        }
+        addedBy.setText(userTxt);
 
         if (location.getType()){
             private_indicator.setVisibility(View.VISIBLE);

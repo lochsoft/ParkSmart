@@ -129,7 +129,7 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             saveRememberMeState();
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(this, "Google Sign In Success: " + user.getEmail(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Google Sign In Success: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             startActivity(intent);
                             finish();
@@ -150,7 +150,7 @@ public class LoginActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null && user.isEmailVerified()) {
                                 saveRememberMeState();
-                                Toast.makeText(this, "Welcome back " + user.getEmail(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Welcome back " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 startActivity(intent);
                                 finish();

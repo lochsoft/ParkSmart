@@ -18,23 +18,21 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -43,7 +41,6 @@ import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.Geofence;
@@ -51,6 +48,7 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -200,6 +198,41 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
         return root;
     }
 
+    // advance search function
+    public void openSearchDialog() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.search_dialog, null);
+        bottomSheetDialog.setContentView(dialogView);
+
+// Initialize your views
+        Chip checkPlenty = dialogView.findViewById(R.id.checkPlenty);
+        Chip checkLimited = dialogView.findViewById(R.id.checkLimited);
+        Chip checkNoSpace = dialogView.findViewById(R.id.checkNoSpace);
+        Chip checkUnknown = dialogView.findViewById(R.id.checkUnknown);
+        Button btnSearch = dialogView.findViewById(R.id.searchBtn2);
+        RecyclerView recyclerResults = dialogView.findViewById(R.id.recyclerResults);
+
+// Show the dialog
+        bottomSheetDialog.show();
+
+// Set up RecyclerView layout manager
+        recyclerResults.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+// Set search button click listener
+        btnSearch.setOnClickListener(v -> {
+            // Build your filter list
+            List<String> selectedAvailabilities = new ArrayList<>();
+            if (checkPlenty.isChecked()) selectedAvailabilities.add("@string/plenty_of_space");
+            if (checkLimited.isChecked()) selectedAvailabilities.add("@string/limited_space");
+            if (checkNoSpace.isChecked()) selectedAvailabilities.add("@string/no_space");
+            if (checkUnknown.isChecked()) selectedAvailabilities.add("@string/unknown_availability");
+
+            // Now you can use selectedAvailabilities list for your filtering logic
+        });
+
+    }
+
     // refresh maps locations
     private void setupRefreshButton(Button button) {
         button.setOnClickListener(v -> {
@@ -313,6 +346,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                                 Double price = document.getDouble("price");
                                 String description = document.getString("description");
                                 boolean type = Boolean.TRUE.equals(document.getBoolean("type"));
+                                String user = document.getString("user");
+                                String nickName = document.getString("userName");
 
                                 if (description == null) {
                                     description = "No description available";
@@ -320,7 +355,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
 
                                 Log.d("FirestoreData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
 
-                                Location location = new Location(name, latitude, longitude, availability, rating, price, document.getId(), description, type);
+                                Location location = new Location(name, latitude, longitude, availability, rating, price, document.getId(), description, type, user, nickName);
                                 // add location names to list
                                 locations.add(location);
 
@@ -346,6 +381,8 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                                     Double price = entity.price;
                                     String description = entity.description;
                                     boolean type = true; // or use `entity.type` if you saved this as a field
+                                    String user = entity.user;
+                                    String nickName = entity.user;
 
                                     if (description == null) {
                                         description = "No description available";
@@ -354,7 +391,7 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
                                     Log.d("LocalData", "Name: " + name + ", Lat: " + latitude + ", Lon: " + longitude);
 
                                     // binding privet parking details to locations adapter
-                                    Location location = new Location(name, latitude, longitude, availability, rating, price, null, description, type);
+                                    Location location = new Location(name, latitude, longitude, availability, rating, price, null, description, type, user, nickName);
                                     locations.add(location);
 
                                     // 👉 Add Geofence for this location
@@ -590,44 +627,6 @@ public class HomeFragment extends Fragment implements MapEventsReceiver { // Imp
             }
         }
     }
-
-//    private void locateUser() {
-//        try {
-//        /*
-//        GeoPoint userLocation = locationHelper.getUserLocation();
-//        if (userLocation != null) {
-//            mapView.getController().animateTo(userLocation);
-//            mapView.getController().setZoom(20.0); // Zoom in closer to the user
-//
-//            // Update the marker's position
-//            updateUserMarkerPosition(userLocation);
-//        } else {
-//            // Optionally set a default location or show a message
-//            mapView.getController().setZoom(20.0);
-//            mapView.getController().setCenter(new GeoPoint(7.8731, 80.7718));
-//            Toast.makeText(requireContext(), "Could not get user location", Toast.LENGTH_SHORT).show();
-//        }*/
-//
-//            LocationHelper locationHelper = new LocationHelper(requireContext());
-//            locationHelper.initFusedLocation();
-//
-//            locationHelper.getAccurateLocation(location -> {
-//                if (location != null) {
-//                    GeoPoint userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
-//                    mapView.getController().animateTo(userLocation);
-//                    mapView.getController().setZoom(20.0);
-//                    updateUserMarkerPosition(userLocation); // update the marker position
-//                    Log.d("UserLocation", "Lat: " + userLocation.getLatitude() + ", Lon: " + userLocation.getLongitude());
-//                    // You can now place your pin here
-//                } else {
-//                    Toast.makeText(getContext(), "Unable to get current location", Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        } catch (Exception e) {
-//            Log.d("LocateUser", "Error locating user: " + e.getMessage());
-//            Toast.makeText(requireContext(), "Error locating user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//        }
-//    }
 
     @SuppressLint("MissingPermission")
     private void locateUser() {
